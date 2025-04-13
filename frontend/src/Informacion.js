@@ -1,17 +1,8 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 
-function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+function Informacion() {
   const [darkMode, setDarkMode] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [fontSize, setFontSize] = useState(16);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    alert('Inicio de sesión simulado');
-  };
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -73,7 +64,6 @@ function Login() {
     borderRadius: '10px',
     backgroundColor: darkMode ? '#2c2c2c' : '#fff',
     color: darkMode ? '#f5f5f5' : '#000',
-    paddingRight: '160px',
   };
 
   const buttonStyle = {
@@ -101,55 +91,57 @@ function Login() {
         }}
       />
 
-      <h1 style={titleStyle}>Medicapp</h1>
+      <h1 style={titleStyle}>Tu Información</h1>
 
       <div style={cardStyle}>
-        <h2>Iniciar Sesión</h2>
+        <h2>Detalles</h2>
+        
         <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
           <button type="button" onClick={disminuirFuente} style={buttonStyle}>A-</button>
           <button type="button" onClick={aumentarFuente} style={buttonStyle}>A+</button>
         </div>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <input
-            type="email"
-            placeholder="Correo electrónico"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={inputStyle}
-          />
-          <div style={{ position: 'relative' }}>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              width: '350px', 
+              height: '180px', 
+              margin: '20px auto',
+              backgroundColor: '#ddd',
+              textAlign: 'center',
+              lineHeight: '150px',
+              color: '#fff',
+              fontWeight: 'bold',
+              borderRadius: '10px', 
+              border: '2px solid #bbb', 
+            }}>
+              Imagen carnet
+            </div>
+          </div>
+          
+          <div>
+            <label style={{ fontWeight: 'bold' }}>RUT</label>
             <input
-              type={showPassword ? 'text' : 'password'}
-              placeholder="Contraseña"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
+              type="text"
+              placeholder="12345678-9"
               style={inputStyle}
-            />
-            <img
-              onClick={() => setShowPassword(!showPassword)}
-              src={showPassword ? "/openeye.png" : "/closedeye.png"}
-              alt="Mostrar/Ocultar contraseña"
-              style={{
-                position: 'absolute',
-                right: '1px',
-                top: '55%',
-                transform: 'translateY(-50%)',
-                width: '80px',
-                height: '80px',
-                cursor: 'pointer',
-              }}
+              disabled
             />
           </div>
-          <button type="submit" style={buttonStyle}>Ingresar</button>
-        </form>
-        <p>
-          ¿No tienes cuenta? <Link to="/registro">Regístrate aquí</Link>
-        </p>
+          
+          <div>
+            <label style={{ fontWeight: 'bold' }}>Números de emergencia</label>
+            <input
+              type="text"
+              placeholder="Hija: 1234 1234    //    Hijo: 1234 1234"
+              style={inputStyle}
+              disabled
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-export default Login;
+export default Informacion;

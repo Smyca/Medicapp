@@ -1,24 +1,37 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-function Login() {
+
+function Registro() {
+  const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [darkMode, setDarkMode] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [fontSize, setFontSize] = useState(16);
+  const [darkMode, setDarkMode] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert('Inicio de sesión simulado');
+    if (password !== confirmPassword) {
+      alert('Las contraseñas no coinciden');
+      return;
+    }
+    alert('Registro simulado');
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
   };
+  
+  const [fontSize, setFontSize] = useState(16);
 
-  const aumentarFuente = () => setFontSize((prev) => Math.min(prev + 2, 28));
-  const disminuirFuente = () => setFontSize((prev) => Math.max(prev - 2, 12));
+const aumentarFuente = () => setFontSize((prev) => Math.min(prev + 2, 28));
+const disminuirFuente = () => setFontSize((prev) => Math.max(prev - 2, 12));
+
 
   const containerStyle = {
     height: '100vh',
@@ -46,11 +59,11 @@ function Login() {
     top: '20px',
     right: '20px',
     padding: '10px 12px',
-    fontSize: '20px',
     backgroundColor: 'transparent',
     border: 'none',
     cursor: 'pointer',
-    color: darkMode ? '#f5f5f5' : '#333',
+    width: '70px',
+    height: '50px',
   };
 
   const cardStyle = {
@@ -65,16 +78,15 @@ function Login() {
   };
 
   const inputStyle = {
-    padding: '20px',
+    padding: '15px',
     fontSize: `${fontSize}px`,
-    width: '100%',
-    boxSizing: 'border-box',
     border: '1px solid #ccc',
-    borderRadius: '10px',
+    borderRadius: '8px',
     backgroundColor: darkMode ? '#2c2c2c' : '#fff',
     color: darkMode ? '#f5f5f5' : '#000',
-    paddingRight: '160px',
+    width: '92%',
   };
+  
 
   const buttonStyle = {
     padding: '14px',
@@ -87,29 +99,46 @@ function Login() {
     transition: 'background-color 0.3s ease',
   };
 
+  const passwordContainerStyle = {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+  };
+
+  const eyeIconStyle = {
+    position: 'absolute',
+    right: '1px',
+    cursor: 'pointer',
+    width: '80px',
+    height: '80px',
+  };
+
   return (
     <div style={containerStyle}>
       <img
         onClick={toggleDarkMode}
         src={darkMode ? "/lightmode.png" : "/darkmode.png"}
         alt="Modo oscuro"
-        style={{
-          ...toggleButtonStyle,
-          width: '70px',
-          height: '50px',
-          transition: 'all 0.3s ease',
-        }}
+        style={{ ...toggleButtonStyle }}
       />
-
       <h1 style={titleStyle}>Medicapp</h1>
 
       <div style={cardStyle}>
-        <h2>Iniciar Sesión</h2>
+        <h2>Registro</h2>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
-          <button type="button" onClick={disminuirFuente} style={buttonStyle}>A-</button>
-          <button type="button" onClick={aumentarFuente} style={buttonStyle}>A+</button>
-        </div>
+  <button type="button" onClick={disminuirFuente} style={buttonStyle}>A-</button>
+  <button type="button" onClick={aumentarFuente} style={buttonStyle}>A+</button>
+      </div>
+
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <input
+            type="text"
+            placeholder="Nombre completo"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            required
+            style={inputStyle}
+          />
           <input
             type="email"
             placeholder="Correo electrónico"
@@ -118,38 +147,40 @@ function Login() {
             required
             style={inputStyle}
           />
-          <div style={{ position: 'relative' }}>
+          <div style={passwordContainerStyle}>
             <input
               type={showPassword ? 'text' : 'password'}
               placeholder="Contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              style={inputStyle}
+              style={{ ...inputStyle, paddingRight: '40px' }}
             />
             <img
-              onClick={() => setShowPassword(!showPassword)}
+              onClick={togglePasswordVisibility}
               src={showPassword ? "/openeye.png" : "/closedeye.png"}
-              alt="Mostrar/Ocultar contraseña"
-              style={{
-                position: 'absolute',
-                right: '1px',
-                top: '55%',
-                transform: 'translateY(-50%)',
-                width: '80px',
-                height: '80px',
-                cursor: 'pointer',
-              }}
+              alt="Mostrar contraseña"
+              style={eyeIconStyle}
+              
             />
           </div>
-          <button type="submit" style={buttonStyle}>Ingresar</button>
+          <input
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Confirmar contraseña"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            style={inputStyle}
+          />
+          <button type="submit" style={buttonStyle}>Registrarse</button>
         </form>
         <p>
-          ¿No tienes cuenta? <Link to="/registro">Regístrate aquí</Link>
-        </p>
+  ¿Ya tienes cuenta? <Link to="/">Inicia sesión</Link>
+</p>
+
       </div>
     </div>
   );
 }
 
-export default Login;
+export default Registro;
