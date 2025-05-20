@@ -1,21 +1,32 @@
 {
+  "name": "medicapp",
+  "version": "1.0.0",
+  "description": "Sistema de gestión de medicamentos",
+  "scripts": {
+    "start:api": "cd API && npm run dev",
+    "start:auth": "cd backend/service_auth && npm run dev",
+    "dev": "concurrently \"npm run start:api\" \"npm run start:auth\"",
+    "install:all": "npm install && cd API && npm install && cd ../backend/service_auth && npm install"
+  },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.1.2",
     "@react-native-community/push-notification-ios": "^1.11.0",
     "@react-navigation/drawer": "^6.6.6",
     "@react-navigation/native": "^6.1.9",
+    "dotenv": "^16.5.0",
     "expo": "^52.0.46",
+    "expo-image-picker": "~16.0.6",
     "expo-notifications": "^0.29.14",
     "react-native-gesture-handler": "~2.20.2",
     "react-native-image-picker": "^8.2.0",
     "react-native-push-notification": "^8.1.1",
     "react-native-reanimated": "~3.16.1",
     "react-native-safe-area-context": "^4.8.2",
-    "react-native-screens": "^3.29.0",
-    "expo-image-picker": "~16.0.6"
+    "react-native-screens": "^3.29.0"
   },
   "devDependencies": {
     "@react-native-community/cli": "^18.0.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "concurrently": "^8.2.2"
   }
 }
