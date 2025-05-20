@@ -1,20 +1,18 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useContext } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createStackNavigator } from '@react-navigation/stack';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { ActivityIndicator, View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Text } from 'react-native';
 import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import HomeScreen from './screens/HomeScreen';
 import MedicamentosScreen from './screens/MedicamentosScreen';
 import InformacionScreen from './screens/InformacionScreen';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
-import { authService } from './services/authService';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { ThemeProvider, ThemeContext } from './context/ThemeContext';
 import { MedicamentosProvider } from './context/MedicamentosContext';
-import AuthNavigator from './navigation/AuthNavigator';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -41,8 +39,6 @@ const MainNavigator = () => {
         drawerLabelStyle: {
           color: theme.text,
         },
-        drawerType: 'front',
-        swipeEnabled: true,
       }}
       drawerContent={(props) => (
         <View style={{ flex: 1 }}>
@@ -67,27 +63,9 @@ const MainNavigator = () => {
         </View>
       )}
     >
-      <Drawer.Screen 
-        name="Home" 
-        component={HomeScreen}
-        options={{
-          title: 'Inicio',
-        }}
-      />
-      <Drawer.Screen 
-        name="Medicamentos" 
-        component={MedicamentosScreen}
-        options={{
-          title: 'Medicamentos',
-        }}
-      />
-      <Drawer.Screen 
-        name="Informacion" 
-        component={InformacionScreen}
-        options={{
-          title: 'Información',
-        }}
-      />
+      <Drawer.Screen name="Home" component={HomeScreen} options={{ title: 'Inicio' }} />
+      <Drawer.Screen name="Medicamentos" component={MedicamentosScreen} options={{ title: 'Medicamentos' }} />
+      <Drawer.Screen name="Informacion" component={InformacionScreen} options={{ title: 'Información' }} />
     </Drawer.Navigator>
   );
 };
@@ -103,37 +81,24 @@ const AuthStack = () => {
 
 const AppContent = () => {
   const { isAuthenticated } = useContext(AuthContext);
-  const { theme } = useContext(ThemeContext);
 
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {isAuthenticated ? (
-          <Stack.Screen name="Main" component={MainNavigator} />
-        ) : (
-          <Stack.Screen name="Auth" component={AuthNavigator} />
-        )}
-      </Stack.Navigator>
+      {isAuthenticated ? <MainNavigator /> : <AuthStack />}
     </NavigationContainer>
   );
 };
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <MedicamentosProvider>
-          <AppContent />
-        </MedicamentosProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider>
+        <AuthProvider>
+          <MedicamentosProvider>
+            <AppContent />
+          </MedicamentosProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
-}
-
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-}); 
+} 

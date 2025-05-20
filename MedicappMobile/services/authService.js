@@ -3,49 +3,45 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Configuración base de axios
 const api = axios.create({
-  baseURL: 'http://tu-backend-url/api', // Reemplazar con la URL real del backend
+  baseURL: 'http://localhost:3000/api', // URL del API Gateway
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
+// Interceptor para agregar el token a las peticiones
+api.interceptors.request.use(
+  async (config) => {
+    const token = await AsyncStorage.getItem('@auth_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export const authService = {
   // Registro de usuario
   register: async (userData) => {
     try {
-      // Guardar usuario localmente
-      const users = await authService.getUsers();
-      const userExists = users.some(user => user.email === userData.email);
-      
-      if (userExists) {
-        throw { message: 'El correo electrónico ya está registrado' };
-      }
-
-      const newUser = {
-        ...userData,
-        id: Date.now().toString(),
-        createdAt: new Date().toISOString()
-      };
-
-      await authService.saveUsers([...users, newUser]);
-      return { success: true, user: newUser };
+      const response = await api.post('/register', userData);
+      const { token, user } = response.data;
+      await authService.saveToken(token);
+      return { success: true, user };
     } catch (error) {
       throw error.response?.data || { message: 'Error al registrar usuario' };
     }
   },
 
-  // Login local
+  // Login
   login: async (email, password) => {
     try {
-      const users = await authService.getUsers();
-      const user = users.find(u => u.email === email && u.password === password);
-      
-      if (!user) {
-        throw { message: 'Credenciales inválidas' };
-      }
-
-      const token = `local-token-${Date.now()}`;
+      const response = await api.post('/login', { email, password });
+      const { token, user } = response.data;
       await authService.saveToken(token);
       return { token, user };
     } catch (error) {
@@ -53,22 +49,13 @@ export const authService = {
     }
   },
 
-  // Métodos para manejar usuarios
-  getUsers: async () => {
+  // Obtener perfil del usuario
+  getProfile: async () => {
     try {
-      const usersJson = await AsyncStorage.getItem('@users');
-      return usersJson ? JSON.parse(usersJson) : [];
+      const response = await api.get('/profile');
+      return response.data;
     } catch (error) {
-      console.error('Error al obtener usuarios:', error);
-      return [];
-    }
-  },
-
-  saveUsers: async (users) => {
-    try {
-      await AsyncStorage.setItem('@users', JSON.stringify(users));
-    } catch (error) {
-      console.error('Error al guardar usuarios:', error);
+      throw error.response?.data || { message: 'Error al obtener el perfil' };
     }
   },
 
@@ -99,4 +86,14 @@ export const authService = {
       console.error('Error al eliminar el token:', error);
     }
   },
+
+  // Verificar si el usuario está autenticado
+  isAuthenticated: async () => {
+    try {
+      const token = await authService.getToken();
+      return !!token;
+    } catch (error) {
+      return false;
+    }
+  }
 }; 
