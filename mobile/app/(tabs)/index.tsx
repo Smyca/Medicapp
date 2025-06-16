@@ -53,9 +53,27 @@ export default function ProfileScreen() {
 
   const loadUserData = async () => {
     try {
-      const storedData = await AsyncStorage.getItem('userData');
-      if (storedData) {
-        setUserData(JSON.parse(storedData));
+      // Obtén el usuarioId guardado en AsyncStorage (debe guardarse al hacer login)
+      const usuarioId = await AsyncStorage.getItem('usuarioId');
+      if (!usuarioId) return;
+
+      // Llama al backend para obtener la info de emergencia
+      const response = await fetch(`http://localhost:8080/infoEmergencia/usuario/${usuarioId}`);
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data)
+        setUserData({
+          name: data.nombre || '', // Ajusta según los campos que devuelva tu backend
+          age: data.edad || '',
+          bloodType: data.tipoSangre || '',
+          allergies: data.alergias || '',
+          chronicDiseases: data.enfermedadesCronicas || '',
+          importantMedication: data.medicacionImportante || '',
+          address: data.zonaDireccion || '',
+          medicalNotes: data.notasMedicas || '',
+          emergencyContacts: [], // Si tienes contactos, agrégalos aquí
+          profileImage: '', // Si tienes imagen, agrégala aquí
+        });
       }
     } catch (error) {
       console.error('Error loading user data:', error);

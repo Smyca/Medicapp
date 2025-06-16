@@ -17,22 +17,22 @@ export default function LoginScreen() {
         return;
       }
 
-      // Aquí normalmente validarías las credenciales con tu backend
-      // Por ahora, usaremos un login simple para demostración
-      await AsyncStorage.setItem('userToken', 'dummy-token');
-      await AsyncStorage.setItem('userEmail', email);
-      
-      // Crear datos de usuario por defecto si no existen
-      const userData = {
-        name: 'Usuario',
-        age: '',
-        bloodType: '',
-        allergies: '',
-        emergencyContacts: []
-      };
-      await AsyncStorage.setItem('userData', JSON.stringify(userData));
-      
-      router.replace('/(tabs)');
+      const response = await fetch('http://localhost:8080/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        await AsyncStorage.setItem('userEmail', email);
+        await AsyncStorage.setItem('usuarioId', data.usuarioId.toString()); 
+
+        router.replace('/(tabs)');
+      } else {
+        Alert.alert('Error', data.message || 'Usuario o contraseña incorrectos');
+      }
     } catch (error) {
       console.error('Error during login:', error);
       Alert.alert('Error', 'Ocurrió un error al iniciar sesión');
@@ -181,4 +181,4 @@ const styles = StyleSheet.create({
     color: '#2196F3',
     fontWeight: 'bold',
   },
-}); 
+});
