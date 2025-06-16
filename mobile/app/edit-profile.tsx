@@ -7,18 +7,20 @@ import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function EditProfileScreen() {
-  const [userData, setUserData] = useState({
-    name: '',
-    age: '',
+  // Estados para cada grupo de datos
+  const [emergencyData, setEmergencyData] = useState({
+    address: '',
+    medicalNotes: '',
+  });
+  const [medicalData, setMedicalData] = useState({
     bloodType: '',
     allergies: '',
     chronicDiseases: '',
     importantMedication: '',
-    address: '',
-    medicalNotes: '',
-    emergencyContacts: [{ name: '', phone: '', relation: '' }],
-    profileImage: ''
   });
+  const [emergencyContacts, setEmergencyContacts] = useState([
+    { name: '', phone: '', relation: '' }
+  ]);
 
   useEffect(() => {
     loadUserData();
@@ -26,40 +28,110 @@ export default function EditProfileScreen() {
 
   const loadUserData = async () => {
     try {
-      const storedData = await AsyncStorage.getItem('userData');
-      if (storedData) {
-        setUserData(JSON.parse(storedData));
+      const usuarioId = await AsyncStorage.getItem('usuarioId');
+      if (!usuarioId) return;
+
+      // Info de emergencia
+      const infoEmergenciaRes = await fetch(`http://localhost:8080/info-emergencia/usuario/${usuarioId}`);
+      if (infoEmergenciaRes.ok) {
+        const data = await infoEmergenciaRes.json();
+        setEmergencyData({
+          address: data.zonaDireccion || '',
+          medicalNotes: data.notasGenerales || '',
+        });
+      }
+
+      // Info médica
+      const infoMedicaRes = await fetch(`http://localhost:8080/info-medica/usuario/${usuarioId}`);
+      if (infoMedicaRes.ok) {
+        const data = await infoMedicaRes.json();
+        setMedicalData({
+          bloodType: data.tipoSangre || '',
+          allergies: data.alergias || '',
+          chronicDiseases: data.enfermedadesCronicas || '',
+          importantMedication: data.medicacionImportante || '',
+        });
+      }
+
+      // Contactos de emergencia
+      const contactosRes = await fetch(`http://localhost:8080/contactos-emergencia/usuario/${usuarioId}`);
+      if (contactosRes.ok) {
+        const data = await contactosRes.json();
+        setEmergencyContacts(
+          data.length > 0
+            ? data.map((c: any) => ({
+                name: c.nombre || '',
+                phone: c.telefono || '',
+                relation: c.relacion || '',
+              }))
+            : [{ name: '', phone: '', relation: '' }]
+        );
       }
     } catch (error) {
-      console.error('Error loading user data:', error);
+      Alert.alert('Error', 'No se pudo cargar la información');
     }
   };
 
-  const handleChange = (field: string, value: string) => {
-    setUserData({ ...userData, [field]: value });
+  // Handlers para los campos
+  const handleEmergencyChange = (field: string, value: string) => {
+    setEmergencyData({ ...emergencyData, [field]: value });
   };
-
+  const handleMedicalChange = (field: string, value: string) => {
+    setMedicalData({ ...medicalData, [field]: value });
+  };
   const handleContactChange = (index: number, field: 'name' | 'phone' | 'relation', value: string) => {
-    const updatedContacts = [...userData.emergencyContacts];
+    const updatedContacts = [...emergencyContacts];
     updatedContacts[index][field] = value;
-    setUserData({ ...userData, emergencyContacts: updatedContacts });
+    setEmergencyContacts(updatedContacts);
   };
-
   const addContact = () => {
-    setUserData({
-      ...userData,
-      emergencyContacts: [...userData.emergencyContacts, { name: '', phone: '', relation: '' }],
-    });
+    setEmergencyContacts([...emergencyContacts, { name: '', phone: '', relation: '' }]);
   };
-
   const removeContact = (index: number) => {
-    const updatedContacts = userData.emergencyContacts.filter((_, i) => i !== index);
-    setUserData({ ...userData, emergencyContacts: updatedContacts });
+    setEmergencyContacts(emergencyContacts.filter((_, i) => i !== index));
   };
 
+  // Guardar cambios
   const handleSave = async () => {
     try {
-      await AsyncStorage.setItem('userData', JSON.stringify(userData));
+      const usuarioId = await AsyncStorage.getItem('usuarioId');
+      if (!usuarioId) return;
+
+      // Actualizar info de emergencia
+      await fetch(`http://localhost:8080/info-emergencia/usuario/${usuarioId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          zonaDireccion: emergencyData.address,
+          notasGenerales: emergencyData.medicalNotes,
+        }),
+      });
+
+      // Actualizar info médica
+      await fetch(`http://localhost:8080/info-medica/usuario/${usuarioId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tipoSangre: medicalData.bloodType,
+          alergias: medicalData.allergies,
+          enfermedadesCronicas: medicalData.chronicDiseases,
+          medicacionImportante: medicalData.importantMedication,
+        }),
+      });
+
+      // Actualizar contactos de emergencia
+      await fetch(`http://localhost:8080/contactos-emergencia/usuario/${usuarioId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(
+          emergencyContacts.map(c => ({
+            nombre: c.name,
+            telefono: c.phone,
+            relacion: c.relation,
+          }))
+        ),
+      });
+
       Alert.alert('Perfil actualizado', 'Los datos se guardaron correctamente.');
       router.back();
     } catch (error) {
@@ -77,66 +149,59 @@ export default function EditProfileScreen() {
       >
         <ThemedText type="title" style={styles.headerTitle}>Editar Perfil</ThemedText>
       </LinearGradient>
+
+      {/* Información de emergencia */}
       <View style={styles.formCard}>
-        <ThemedText style={styles.label}>Nombre completo</ThemedText>
+        <ThemedText style={styles.sectionTitle}>Información de Emergencia</ThemedText>
+        <ThemedText style={styles.label}>Dirección o zona</ThemedText>
         <TextInput
           style={styles.input}
-          value={userData.name}
-          onChangeText={text => handleChange('name', text)}
-          placeholder="Nombre completo"
+          value={emergencyData.address}
+          onChangeText={text => handleEmergencyChange('address', text)}
+          placeholder="Dirección o zona de residencia"
         />
-        <ThemedText style={styles.label}>Edad</ThemedText>
+        <ThemedText style={styles.label}>Notas generales</ThemedText>
         <TextInput
           style={styles.input}
-          value={userData.age}
-          onChangeText={text => handleChange('age', text)}
-          placeholder="Edad"
-          keyboardType="numeric"
+          value={emergencyData.medicalNotes}
+          onChangeText={text => handleEmergencyChange('medicalNotes', text)}
+          placeholder="Notas relevantes para emergencias"
         />
+
+        {/* Información médica */}
+        <ThemedText style={styles.sectionTitle}>Información Médica</ThemedText>
         <ThemedText style={styles.label}>Tipo de sangre</ThemedText>
         <TextInput
           style={styles.input}
-          value={userData.bloodType}
-          onChangeText={text => handleChange('bloodType', text)}
+          value={medicalData.bloodType}
+          onChangeText={text => handleMedicalChange('bloodType', text)}
           placeholder="Ej: O+, A-, etc."
         />
         <ThemedText style={styles.label}>Alergias</ThemedText>
         <TextInput
           style={styles.input}
-          value={userData.allergies}
-          onChangeText={text => handleChange('allergies', text)}
+          value={medicalData.allergies}
+          onChangeText={text => handleMedicalChange('allergies', text)}
           placeholder="Alergias importantes"
         />
         <ThemedText style={styles.label}>Enfermedades crónicas</ThemedText>
         <TextInput
           style={styles.input}
-          value={userData.chronicDiseases}
-          onChangeText={text => handleChange('chronicDiseases', text)}
+          value={medicalData.chronicDiseases}
+          onChangeText={text => handleMedicalChange('chronicDiseases', text)}
           placeholder="Ej: Diabetes, hipertensión, etc."
         />
         <ThemedText style={styles.label}>Medicamento importante</ThemedText>
         <TextInput
           style={styles.input}
-          value={userData.importantMedication}
-          onChangeText={text => handleChange('importantMedication', text)}
+          value={medicalData.importantMedication}
+          onChangeText={text => handleMedicalChange('importantMedication', text)}
           placeholder="Nombre del medicamento"
         />
-        <ThemedText style={styles.label}>Dirección o zona</ThemedText>
-        <TextInput
-          style={styles.input}
-          value={userData.address}
-          onChangeText={text => handleChange('address', text)}
-          placeholder="Dirección o zona de residencia"
-        />
-        <ThemedText style={styles.label}>Notas médicas</ThemedText>
-        <TextInput
-          style={styles.input}
-          value={userData.medicalNotes}
-          onChangeText={text => handleChange('medicalNotes', text)}
-          placeholder="Notas relevantes para emergencias"
-        />
-        <ThemedText style={styles.sectionTitle}>Contactos de emergencia</ThemedText>
-        {userData.emergencyContacts.map((contact, idx) => (
+
+        {/* Contactos de emergencia */}
+        <ThemedText style={styles.sectionTitle}>Contactos de Emergencia</ThemedText>
+        {emergencyContacts.map((contact, idx) => (
           <View key={idx} style={styles.contactCard}>
             <TextInput
               style={styles.input}
@@ -157,7 +222,7 @@ export default function EditProfileScreen() {
               onChangeText={text => handleContactChange(idx, 'relation', text)}
               placeholder="Relación (hijo, vecino, etc.)"
             />
-            {userData.emergencyContacts.length > 1 && (
+            {emergencyContacts.length > 1 && (
               <TouchableOpacity style={styles.removeContactBtn} onPress={() => removeContact(idx)}>
                 <IconSymbol size={18} name="trash.fill" color="#FF6B6B" />
                 <ThemedText style={styles.removeContactText}>Eliminar</ThemedText>
@@ -295,4 +360,4 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontSize: 16,
   },
-}); 
+});

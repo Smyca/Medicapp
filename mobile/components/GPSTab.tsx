@@ -153,7 +153,7 @@ export function GPSTab() {
 
     return () => {
       if (locationSubscription.current) {
-        locationSubscription.current.remove();
+        // locationSubscription.current.remove();
       }
     };
   }, []);

@@ -1,7 +1,7 @@
 package Controller;
 
-import Model.InfoEmergency;
-import Repository.InfoEmergencyRepository;
+import Model.InfoMedica;
+import Repository.InfoMedicaRepository;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
@@ -9,23 +9,23 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
 
-@Path("/info-emergencia")
+@Path("/info-medica")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-public class InfoEmergencyResource {
+public class InfoMedicaResource {
 
     @Inject
-    InfoEmergencyRepository repository;
+    InfoMedicaRepository repository;
 
     @GET
-    public List<InfoEmergency> getAll() {
+    public List<InfoMedica> getAll() {
         return repository.listAll();
     }
 
     @GET
     @Path("/usuario/{usuarioId}")
     public Response getByUsuario(@PathParam("usuarioId") Long usuarioId) {
-        InfoEmergency info = repository.find("usuarioId", usuarioId).firstResult();
+        InfoMedica info = repository.find("usuarioId", usuarioId).firstResult();
         if (info == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -34,7 +34,7 @@ public class InfoEmergencyResource {
 
     @POST
     @Transactional
-    public Response create(InfoEmergency nueva) {
+    public Response create(InfoMedica nueva) {
         repository.persist(nueva);
         return Response.status(Response.Status.CREATED).entity(nueva).build();
     }
@@ -42,15 +42,16 @@ public class InfoEmergencyResource {
     @PUT
     @Path("/usuario/{usuarioId}")
     @Transactional
-    public Response updateByUsuario(@PathParam("usuarioId") Long usuarioId, InfoEmergency actualizada) {
-        InfoEmergency existente = repository.find("usuarioId", usuarioId).firstResult();
+    public Response updateByUsuario(@PathParam("usuarioId") Long usuarioId, InfoMedica actualizada) {
+        InfoMedica existente = repository.find("usuarioId", usuarioId).firstResult();
         if (existente == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        existente.setZonaDireccion(actualizada.getZonaDireccion());
-        existente.setContactoPrincipal(actualizada.getContactoPrincipal());
-        existente.setNotasGenerales(actualizada.getNotasGenerales());
+        existente.setTipoSangre(actualizada.getTipoSangre());
+        existente.setAlergias(actualizada.getAlergias());
+        existente.setEnfermedadesCronicas(actualizada.getEnfermedadesCronicas());
+        existente.setMedicacionImportante(actualizada.getMedicacionImportante());
 
         return Response.ok(existente).build();
     }
@@ -59,7 +60,7 @@ public class InfoEmergencyResource {
     @Path("/usuario/{usuarioId}")
     @Transactional
     public Response deleteByUsuario(@PathParam("usuarioId") Long usuarioId) {
-        InfoEmergency existente = repository.find("usuarioId", usuarioId).firstResult();
+        InfoMedica existente = repository.find("usuarioId", usuarioId).firstResult();
         if (existente == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }

@@ -23,14 +23,16 @@ export default function EditMedicationScreen() {
     'Cada 12 horas',
     'Cada 24 horas',
   ];
-  const TIME_OPTIONS = [
-    'Mañana',
-    'Tarde',
-    'Noche',
+  const HOUR_OPTIONS = [
+    "06:00", "07:00", "08:00", "09:00", "10:00", "11:00",
+    "12:00", "13:00", "14:00", "15:00", "16:00", "17:00",
+    "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"
   ];
 
   useEffect(() => {
-    loadMedication();
+    if (id) {
+      loadMedication();
+    }
     Notifications.setNotificationHandler({
       handleNotification: async () => ({
         shouldShowAlert: true,
@@ -52,16 +54,25 @@ export default function EditMedicationScreen() {
 
   const loadMedication = async () => {
     try {
-      const storedMedications = await AsyncStorage.getItem('medications');
-      if (storedMedications) {
-        const meds = JSON.parse(storedMedications);
-        const med = meds.find((m: any) => m.id === id);
-        if (med) {
-          setMedication(med);
-        }
+      
+      // Cargar medicamento desde el backend usando el id
+      const res = await fetch(`http://localhost:8080/medicamentos/${id}`);
+      if (res.ok) {
+        const med = await res.json();
+        setMedication({
+            name:    med.nombre                || '',
+            dosage:  med.dosis                 || '',
+            frequency: med.frecuenciaPersonalizada || '',
+            time:     med.horaPersonalizada      || '',
+            notes:    med.notasAdicionales       || '',
+          });
+
+      } else {
+        Alert.alert('Error', 'No se pudo cargar el medicamento');
       }
     } catch (error) {
       console.error('Error loading medication:', error);
+      Alert.alert('Error', 'No se pudo cargar el medicamento');
     }
   };
 
@@ -90,10 +101,29 @@ export default function EditMedicationScreen() {
       if (!validateMedication()) {
         return;
       }
-      const storedMedications = await AsyncStorage.getItem('medications');
-      let medications = storedMedications ? JSON.parse(storedMedications) : [];
-      medications = medications.map((m: any) => m.id === id ? { ...m, ...medication } : m);
-      await AsyncStorage.setItem('medications', JSON.stringify(medications));
+      const usuarioId = await AsyncStorage.getItem('usuarioId');
+      if (!usuarioId) {
+        Alert.alert('Error', 'No se encontró el usuario');
+        return;
+      }
+      const res = await fetch(`http://localhost:8080/medicamentos/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          usuarioId: Number(usuarioId),
+          nombre: medication.name,
+          dosis: medication.dosage,
+          frecuenciaPersonalizada: medication.frequency,
+          horaPersonalizada: medication.time,
+          recordatorioActivo: reminder,
+          notasAdicionales: medication.notes,
+        }),
+      });
+      if (!res.ok) {
+        Alert.alert('Error', 'No se pudo actualizar el medicamento');
+        return;
+      }
+      // Opcional: manejar recordatorio aquí si lo necesitas
       if (reminder) {
         await Notifications.requestPermissionsAsync();
         await Notifications.scheduleNotificationAsync({
@@ -104,7 +134,7 @@ export default function EditMedicationScreen() {
           },
           trigger: {
             channelId: 'medicamentos',
-            hour: 8, // Aquí puedes mejorar para usar la hora seleccionada
+            hour: 8, // Puedes ajustar según la hora seleccionada
             minute: 0,
             repeats: true,
           },
@@ -118,28 +148,48 @@ export default function EditMedicationScreen() {
   };
 
   const handleDelete = async () => {
-    Alert.alert(
-      'Eliminar Medicamento',
-      '¿Estás seguro de que deseas eliminar este medicamento?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const storedMedications = await AsyncStorage.getItem('medications');
-              let medications = storedMedications ? JSON.parse(storedMedications) : [];
-              medications = medications.filter((m: any) => m.id !== id);
-              await AsyncStorage.setItem('medications', JSON.stringify(medications));
-              router.back();
-            } catch (error) {
-              Alert.alert('Error', 'Ocurrió un error al eliminar el medicamento');
-            }
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('¿Estás seguro de que deseas eliminar este medicamento?');
+      if (!confirmed) return;
+      try {
+        const res = await fetch(`http://localhost:8080/medicamentos/${id}`, {
+          method: 'DELETE',
+        });
+        if (!res.ok) {
+          window.alert('No se pudo eliminar el medicamento');
+          return;
+        }
+        router.back();
+      } catch (error) {
+        window.alert('Ocurrió un error al eliminar el medicamento');
+      }
+    } else {
+      Alert.alert(
+        'Eliminar Medicamento',
+        '¿Estás seguro de que deseas eliminar este medicamento?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Eliminar',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                const res = await fetch(`http://localhost:8080/medicamentos/${id}`, {
+                  method: 'DELETE',
+                });
+                if (!res.ok) {
+                  Alert.alert('Error', 'No se pudo eliminar el medicamento');
+                  return;
+                }
+                router.back();
+              } catch (error) {
+                Alert.alert('Error', 'Ocurrió un error al eliminar el medicamento');
+              }
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   return (
@@ -205,7 +255,7 @@ export default function EditMedicationScreen() {
         <View style={styles.inputGroup}>
           <ThemedText style={styles.label}>Hora *</ThemedText>
           <View style={styles.optionsRow}>
-            {TIME_OPTIONS.map(opt => (
+            {HOUR_OPTIONS.map(opt => (
               <TouchableOpacity
                 key={opt}
                 style={[styles.optionBtn, medication.time === opt && styles.optionBtnSelected]}
@@ -215,15 +265,6 @@ export default function EditMedicationScreen() {
               </TouchableOpacity>
             ))}
           </View>
-          <TextInput
-            style={styles.input}
-            value={medication.time}
-            onChangeText={(text) => {
-              if (text.length <= 20) setMedication({ ...medication, time: text });
-            }}
-            placeholder="Ej: 8:00 AM"
-            maxLength={20}
-          />
         </View>
 
         <View style={styles.inputGroup}>

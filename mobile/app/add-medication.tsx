@@ -12,10 +12,10 @@ const FREQUENCY_OPTIONS = [
   'Cada 12 horas',
   'Cada 24 horas',
 ];
-const TIME_OPTIONS = [
-  'Mañana',
-  'Tarde',
-  'Noche',
+const HOUR_OPTIONS = [
+  "06:00", "07:00", "08:00", "09:00", "10:00", "11:00",
+  "12:00", "13:00", "14:00", "15:00", "16:00", "17:00",
+  "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"
 ];
 
 export default function AddMedicationScreen() {
@@ -53,13 +53,29 @@ export default function AddMedicationScreen() {
       if (!validateMedication()) {
         return;
       }
-      const storedMedications = await AsyncStorage.getItem('medications');
-      const medications = storedMedications ? JSON.parse(storedMedications) : [];
-      const newMedication = {
-        id: Date.now().toString(),
-        ...medication,
-      };
-      await AsyncStorage.setItem('medications', JSON.stringify([...medications, newMedication]));
+      const usuarioId = await AsyncStorage.getItem('usuarioId');
+      if (!usuarioId) {
+        Alert.alert('Error', 'No se encontró el usuario');
+        return;
+      }
+      const res = await fetch('http://localhost:8080/medicamentos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          usuarioId: Number(usuarioId),
+          nombre: medication.name,
+          dosis: medication.dosage,
+          frecuenciaPersonalizada: medication.frequency,
+          horaPersonalizada: medication.time,
+          recordatorioActivo: reminder,
+          notasAdicionales: medication.notes,
+          creadoEn: new Date().toISOString(),
+        }),
+      });
+      if (!res.ok) {
+        Alert.alert('Error', 'No se pudo guardar el medicamento');
+        return;
+      }
       if (reminder) {
         await Notifications.requestPermissionsAsync();
         await Notifications.scheduleNotificationAsync({
@@ -70,7 +86,7 @@ export default function AddMedicationScreen() {
           },
           trigger: {
             channelId: 'medicamentos',
-            hour: 8, // Aquí puedes mejorar para usar la hora seleccionada
+            hour: 8, // Puedes ajustar según la hora seleccionada
             minute: 0,
             repeats: true,
           },
@@ -171,7 +187,7 @@ export default function AddMedicationScreen() {
           <View style={styles.inputGroup}>
             <ThemedText style={styles.label}>Hora *</ThemedText>
             <View style={styles.optionsRow}>
-              {TIME_OPTIONS.map(opt => (
+              {HOUR_OPTIONS.map(opt => (
                 <TouchableOpacity
                   key={opt}
                   style={[styles.optionBtn, medication.time === opt && styles.optionBtnSelected]}
@@ -181,16 +197,6 @@ export default function AddMedicationScreen() {
                 </TouchableOpacity>
               ))}
             </View>
-            <TextInput
-              style={styles.input}
-              value={medication.time}
-              onChangeText={(text) => {
-                if (text.length <= 20) setMedication({ ...medication, time: text });
-              }}
-              placeholder="Ej: 8:00 AM"
-              placeholderTextColor="#aaa"
-              maxLength={20}
-            />
           </View>
           <View style={styles.inputGroup}>
             <ThemedText style={styles.label}>¿Activar recordatorio?</ThemedText>
@@ -323,4 +329,4 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-}); 
+});

@@ -1,78 +1,92 @@
--- 1. Tabla de usuarios (autenticación)
+-- Usuarios (base)
 CREATE TABLE `usuarios` (
-  `id_usuario`        INT            NOT NULL AUTO_INCREMENT,
-  `correo_electronico` VARCHAR(255)  NOT NULL UNIQUE,
-  `hash_contrasenia`  VARCHAR(255)   NOT NULL,
-  `creado_en`         TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id_usuario`)
+  `id_usuario`           INT AUTO_INCREMENT PRIMARY KEY,
+  `correo_electronico`   VARCHAR(255) NOT NULL UNIQUE,
+  `hash_contrasenia`     VARCHAR(255) NOT NULL,
+  `creado_en`            TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 2. Información de emergencia (1:1 con usuarios)
-CREATE TABLE `informacion_emergencia` (
-  `id_info`             INT          NOT NULL AUTO_INCREMENT,
-  `usuario_id`          INT          NOT NULL,
-  `tipo_sangre`         VARCHAR(3),
-  `alergias`            TEXT,
-  `enfermedades_cronicas` TEXT,
-  `medicacion_importante` TEXT,
-  `contacto_principal`  VARCHAR(255),
-  `zona_direccion`      VARCHAR(255),
-  `notas_medicas`       TEXT,
-  PRIMARY KEY (`id_info`),
-  UNIQUE KEY `uq_info_usuario` (`usuario_id`),
-  CONSTRAINT `fk_info_usuario`
-    FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`id_usuario`)
-    ON DELETE CASCADE
+-- Información de emergencia general
+CREATE TABLE `info_emergencia` (
+  `id_info`        INT AUTO_INCREMENT PRIMARY KEY,
+  `usuario_id`     INT NOT NULL,
+  `zona_direccion` VARCHAR(255),
+  `contacto_principal` VARCHAR(255),
+  `notas_generales` TEXT,
+  UNIQUE KEY `uk_usuario_emergencia` (`usuario_id`),
+  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`id_usuario`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 3. Catálogo de opciones de frecuencia
-CREATE TABLE `opciones_frecuencia` (
-  `id_frecuencia`   INT         NOT NULL AUTO_INCREMENT,
-  `etiqueta`        VARCHAR(50) NOT NULL,
-  `intervalo_horas` INT         NOT NULL,
-  PRIMARY KEY (`id_frecuencia`)
+-- Información médica (separada)
+CREATE TABLE `info_medica` (
+  `id_medica`              INT AUTO_INCREMENT PRIMARY KEY,
+  `usuario_id`             INT NOT NULL,
+  `tipo_sangre`            VARCHAR(3),
+  `alergias`               TEXT,
+  `enfermedades_cronicas`  TEXT,
+  `medicacion_importante`  TEXT,
+  UNIQUE KEY `uk_usuario_medica` (`usuario_id`),
+  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`id_usuario`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 4. Catálogo de opciones de franja horaria
-CREATE TABLE `opciones_horario` (
-  `id_horario` INT         NOT NULL AUTO_INCREMENT,
-  `etiqueta`   VARCHAR(50) NOT NULL,
-  PRIMARY KEY (`id_horario`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 5. Medicamentos y recordatorios
+-- Medicamentos
 CREATE TABLE `medicamentos` (
-  `id_medicamento`     INT         NOT NULL AUTO_INCREMENT,
-  `usuario_id`         INT         NOT NULL,
-  `nombre`             VARCHAR(100) NOT NULL,
-  `dosis`              VARCHAR(50)  NOT NULL,
-  `frecuencia_id`      INT,
+  `id_medicamento`           INT AUTO_INCREMENT PRIMARY KEY,
+  `usuario_id`               INT NOT NULL,
+  `nombre`                   VARCHAR(100) NOT NULL,
+  `dosis`                    VARCHAR(50) NOT NULL,
   `frecuencia_personalizada` VARCHAR(100),
-  `horario_id`         INT,
-  `hora_personalizada` TIME,
-  `recordatorio_activo` BOOLEAN    NOT NULL DEFAULT FALSE,
-  `notas_adicionales`  TEXT,
-  `creado_en`          TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id_medicamento`),
-  INDEX `idx_medic_user` (`usuario_id`),
-  CONSTRAINT `fk_med_usuario`
-    FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`id_usuario`)
-    ON DELETE CASCADE,
-  CONSTRAINT `fk_med_frecuencia`
-    FOREIGN KEY (`frecuencia_id`) REFERENCES `opciones_frecuencia`(`id_frecuencia`),
-  CONSTRAINT `fk_med_horario`
-    FOREIGN KEY (`horario_id`) REFERENCES `opciones_horario`(`id_horario`)
+  `hora_personalizada`       TIME,
+  `recordatorio_activo`      BOOLEAN NOT NULL DEFAULT FALSE,
+  `notas_adicionales`        TEXT,
+  `creado_en`                TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`id_usuario`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 6. Población inicial de catálogos
-INSERT INTO `opciones_frecuencia` (`etiqueta`, `intervalo_horas`)
-VALUES
-  ('Cada 8 horas',  8),
-  ('Cada 12 horas', 12),
-  ('Cada 24 horas', 24);
+-- Contactos de emergencia (pueden ser múltiples por usuario)
+CREATE TABLE `contactos_emergencia` (
+  `id_contacto`       INT AUTO_INCREMENT PRIMARY KEY,
+  `usuario_id`        INT NOT NULL,
+  `nombre`            VARCHAR(100) NOT NULL,
+  `relacion`          VARCHAR(100),
+  `telefono`          VARCHAR(20),
+  `direccion`         VARCHAR(255),
+  `observaciones`     TEXT,
+  FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`id_usuario`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO `opciones_horario` (`etiqueta`)
-VALUES
-  ('Mañana'),
-  ('Tarde'),
-  ('Noche');
+
+
+
+
+
+
+-- ---------------------------------------
+
+INSERT INTO usuarios (correo_electronico, hash_contrasenia)
+VALUES ('user', 'password');
+
+INSERT INTO info_emergencia (usuario_id, zona_direccion, contacto_principal, notas_generales)
+VALUES (1, 'Las Condes, Santiago', 'Juan Ramírez - +56912345678', 'Vive sola, antecedentes familiares de hipertensión.');
+
+
+INSERT INTO info_medica (usuario_id, tipo_sangre, alergias, enfermedades_cronicas, medicacion_importante)
+VALUES (1, 'A+', 'Ninguna', 'Asma', 'Salbutamol inhalador');
+
+INSERT INTO medicamentos (
+  usuario_id, nombre, dosis, frecuencia_personalizada, hora_personalizada,
+  recordatorio_activo, notas_adicionales
+)
+VALUES (
+  1, 'Salbutamol', '2 inhalaciones', 'Cada 8 horas', '08:00:00',
+  TRUE, 'Usar solo en caso de síntomas respiratorios agudos.'
+);
+
+
+INSERT INTO contactos_emergencia (usuario_id, nombre, relacion, telefono, direccion, observaciones)
+VALUES 
+  (1, 'Juan Ramírez', 'Padre', '+56912345678', 'Av. Apoquindo 1234, Santiago', 'Disponible siempre'),
+  (1, 'María Torres', 'Amiga', '+56987654321', 'Calle Falsa 123, Las Condes', 'Contacto secundario');
+
+
+

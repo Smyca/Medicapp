@@ -19,6 +19,32 @@ interface Medication {
 export default function MedicationsScreen() {
   const [medications, setMedications] = useState<Medication[]>([]);
 
+  const loadMedications = async () => {
+    try {
+      const usuarioId = await AsyncStorage.getItem('usuarioId');
+      if (!usuarioId) return;
+      const res = await fetch(`http://localhost:8080/medicamentos/usuario/${usuarioId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setMedications(
+          data.map((med: any) => ({
+            id: med.id,
+            name: med.nombre,
+            dosage: med.dosis,
+            frequency: med.frecuenciaPersonalizada,
+            time: med.horaPersonalizada,
+            notes: med.notasAdicionales,
+          }))
+        );
+      } else {
+        setMedications([]);
+      }
+    } catch (error) {
+      console.error('Error loading medications:', error);
+      setMedications([]);
+    }
+  };
+
   useEffect(() => {
     loadMedications();
   }, []);
@@ -28,17 +54,6 @@ export default function MedicationsScreen() {
       loadMedications();
     }, [])
   );
-
-  const loadMedications = async () => {
-    try {
-      const storedMedications = await AsyncStorage.getItem('medications');
-      if (storedMedications) {
-        setMedications(JSON.parse(storedMedications));
-      }
-    } catch (error) {
-      console.error('Error loading medications:', error);
-    }
-  };
 
   const handleDeleteMedication = async (id: string) => {
     Alert.alert(
@@ -279,4 +294,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 10,
   },
-}); 
+});

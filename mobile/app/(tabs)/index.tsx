@@ -18,63 +18,104 @@ interface Medication {
 }
 
 interface EmergencyContact {
+  id: string;
   name: string;
-  phone: string;
   relation: string;
+  phone: string;
+  address?: string;
+  notes?: string;
 }
 
 export default function ProfileScreen() {
   const [userData, setUserData] = useState({
-    name: '',
-    age: '',
+    address: '',
+    medicalNotes: '',
     bloodType: '',
     allergies: '',
     chronicDiseases: '',
     importantMedication: '',
-    address: '',
-    medicalNotes: '',
-    emergencyContacts: [] as EmergencyContact[],
-    profileImage: ''
+    profileImage: '',
   });
   const [medications, setMedications] = useState<Medication[]>([]);
+  const [emergencyContacts, setEmergencyContacts] = useState<EmergencyContact[]>([]);
   const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
-    loadUserData();
-    loadMedications();
+    loadAllUserData();
   }, []);
 
   useFocusEffect(
     React.useCallback(() => {
-      loadUserData();
-      loadMedications();
+      loadAllUserData();
     }, [])
   );
 
-  const loadUserData = async () => {
+  const loadAllUserData = async () => {
     try {
-      // Obtén el usuarioId guardado en AsyncStorage (debe guardarse al hacer login)
       const usuarioId = await AsyncStorage.getItem('usuarioId');
       if (!usuarioId) return;
 
-      // Llama al backend para obtener la info de emergencia
-      const response = await fetch(`http://localhost:8080/infoEmergencia/usuario/${usuarioId}`);
-      if (response.ok) {
-        const data = await response.json();
-        console.log(data)
-        setUserData({
-          name: data.nombre || '', // Ajusta según los campos que devuelva tu backend
-          age: data.edad || '',
-          bloodType: data.tipoSangre || '',
-          allergies: data.alergias || '',
-          chronicDiseases: data.enfermedadesCronicas || '',
-          importantMedication: data.medicacionImportante || '',
-          address: data.zonaDireccion || '',
-          medicalNotes: data.notasMedicas || '',
-          emergencyContacts: [], // Si tienes contactos, agrégalos aquí
-          profileImage: '', // Si tienes imagen, agrégala aquí
-        });
+      // Info de emergencia
+      const infoEmergenciaRes = await fetch(`http://localhost:8080/info-emergencia/usuario/${usuarioId}`);
+      let address = '', medicalNotes = '';
+      if (infoEmergenciaRes.ok) {
+        const data = await infoEmergenciaRes.json();
+        address = data.zonaDireccion || '';
+        medicalNotes = data.notasGenerales || '';
       }
+
+      // Info médica
+      const infoMedicaRes = await fetch(`http://localhost:8080/info-medica/usuario/${usuarioId}`);
+      let bloodType = '', allergies = '', chronicDiseases = '', importantMedication = '';
+      if (infoMedicaRes.ok) {
+        const data = await infoMedicaRes.json();
+        bloodType = data.tipoSangre || '';
+        allergies = data.alergias || '';
+        chronicDiseases = data.enfermedadesCronicas || '';
+        importantMedication = data.medicacionImportante || '';
+      }
+
+      // Medicamentos
+      const medicamentosRes = await fetch(`http://localhost:8080/medicamentos/usuario/${usuarioId}`);
+      let meds: Medication[] = [];
+      if (medicamentosRes.ok) {
+        const data = await medicamentosRes.json();
+        meds = data.map((m: any) => ({
+          id: m.idMedicamento?.toString() || m.id?.toString() || '',
+          name: m.nombre,
+          dosage: m.dosis,
+          frequency: m.frecuenciaPersonalizada || '',
+          time: m.horaPersonalizada || '',
+          notes: m.notasAdicionales || '',
+        }));
+      }
+
+      // Contactos de emergencia
+      const contactosRes = await fetch(`http://localhost:8080/contactos-emergencia/usuario/${usuarioId}`);
+      let contacts: EmergencyContact[] = [];
+      if (contactosRes.ok) {
+        const data = await contactosRes.json();
+        contacts = data.map((c: any) => ({
+          id: c.idContacto?.toString() || c.id?.toString() || '',
+          name: c.nombre,
+          relation: c.relacion || '',
+          phone: c.telefono || '',
+          address: c.direccion || '',
+          notes: c.observaciones || '',
+        }));
+      }
+
+      setUserData({
+        address,
+        medicalNotes,
+        bloodType,
+        allergies,
+        chronicDiseases,
+        importantMedication,
+        profileImage: '', // Puedes cargarla si la tienes guardada
+      });
+      setMedications(meds);
+      setEmergencyContacts(contacts);
     } catch (error) {
       console.error('Error loading user data:', error);
     }
@@ -102,21 +143,11 @@ export default function ProfileScreen() {
     }
   };
 
-  const loadMedications = async () => {
-    try {
-      const storedMedications = await AsyncStorage.getItem('medications');
-      if (storedMedications) {
-        setMedications(JSON.parse(storedMedications));
-      }
-    } catch (error) {
-      console.error('Error loading medications:', error);
-    }
-  };
-
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('userToken');
       await AsyncStorage.removeItem('userEmail');
+      await AsyncStorage.removeItem('usuarioId');
       router.replace('/login');
     } catch (error) {
       console.error('Error during logout:', error);
@@ -131,6 +162,7 @@ export default function ProfileScreen() {
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
       >
+        {/* Botón de opciones */}
         <TouchableOpacity 
           style={styles.settingsButton}
           onPress={() => setShowSettings(!showSettings)}
@@ -140,6 +172,62 @@ export default function ProfileScreen() {
             <IconSymbol size={32} name="ellipsis" color="#2196F3" />
           </View>
         </TouchableOpacity>
+
+        {/* Menú de opciones */}
+        {showSettings && (
+          <ThemedView style={styles.settingsMenu}>
+            <TouchableOpacity 
+              style={styles.settingsOption}
+              onPress={() => {
+                setShowSettings(false);
+                router.push('/edit-profile');
+              }}
+            >
+              <IconSymbol size={20} name="pencil" color="#2196F3" />
+              <ThemedText style={styles.settingsOptionText}>Editar Perfil</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.settingsOption}
+              onPress={() => {
+                setShowSettings(false);
+                router.push('/panic-settings');
+              }}
+            >
+              <IconSymbol size={20} name="exclamationmark.triangle.fill" color="#FFD93D" />
+              <ThemedText style={styles.settingsOptionText}>Configurar Botón de Pánico</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.settingsOption}
+              onPress={() => {
+                setShowSettings(false);
+                handleLogout();
+              }}
+            >
+              <IconSymbol size={20} name="arrow.right.square.fill" color="#FF6B6B" />
+              <ThemedText style={styles.settingsOptionText}>Cerrar Sesión</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.settingsOption}
+              onPress={() => {
+                setShowSettings(false);
+                Alert.alert('Funciona', 'El botón fue presionado');
+              }}
+            >
+              <IconSymbol size={20} name="info.circle.fill" color="#4CAF50" />
+              <ThemedText style={styles.settingsOptionText}>Opción Adicional</ThemedText>
+            </TouchableOpacity>
+          </ThemedView>
+        )}
+
+        {/* <TouchableOpacity 
+          style={styles.settingsButton}
+          onPress={() => setShowSettings(!showSettings)}
+          activeOpacity={0.8}
+        >
+          <View style={styles.gearBg}>
+            <IconSymbol size={32} name="ellipsis" color="#2196F3" />
+          </View>
+        </TouchableOpacity> */}
         <TouchableOpacity style={styles.profileImageContainer3D} onPress={pickImage} activeOpacity={0.85}>
           <View style={styles.profileImageShadow}>
             <View style={styles.profileImageCircle}>
@@ -163,103 +251,39 @@ export default function ProfileScreen() {
           <ThemedText style={styles.emergencyTitle}>Información de Emergencia</ThemedText>
         </View>
         <View style={styles.emergencyRow}>
-          <IconSymbol size={20} name="drop.fill" color="#2196F3" />
-          <ThemedText style={styles.emergencyLabel}>Tipo de Sangre:</ThemedText>
-          <ThemedText style={styles.emergencyValue}>{userData.bloodType || 'No especificado'}</ThemedText>
-        </View>
-        <View style={styles.emergencyRow}>
-          <IconSymbol size={20} name="exclamationmark.triangle.fill" color="#FFD93D" />
-          <ThemedText style={styles.emergencyLabel}>Alergias:</ThemedText>
-          <ThemedText style={styles.emergencyValue}>{userData.allergies || 'Ninguna'}</ThemedText>
-        </View>
-        <View style={styles.emergencyRow}>
-          <IconSymbol size={20} name="cross.case.fill" color="#9C27B0" />
-          <ThemedText style={styles.emergencyLabel}>Enfermedades crónicas:</ThemedText>
-          <ThemedText style={styles.emergencyValue}>{userData.chronicDiseases || 'Ninguna'}</ThemedText>
-        </View>
-        <View style={styles.emergencyRow}>
-          <IconSymbol size={20} name="pills.fill" color="#4CAF50" />
-          <ThemedText style={styles.emergencyLabel}>Medicamento importante:</ThemedText>
-          <ThemedText style={styles.emergencyValue}>{userData.importantMedication || 'No especificado'}</ThemedText>
-        </View>
-        <View style={styles.emergencyRow}>
-          <IconSymbol size={20} name="person.crop.circle.fill.badge.exclam" color="#FF3B30" />
-          <ThemedText style={styles.emergencyLabel}>Contacto principal:</ThemedText>
-          <ThemedText style={styles.emergencyValue}>{userData.emergencyContacts?.[0]?.name || 'No especificado'} {userData.emergencyContacts?.[0]?.phone ? `(${userData.emergencyContacts[0].phone})` : ''}</ThemedText>
-        </View>
-        <View style={styles.emergencyRow}>
           <IconSymbol size={20} name="house.fill" color="#2196F3" />
           <ThemedText style={styles.emergencyLabel}>Dirección/Zona:</ThemedText>
           <ThemedText style={styles.emergencyValue}>{userData.address || 'No especificada'}</ThemedText>
         </View>
         <View style={styles.emergencyRow}>
           <IconSymbol size={20} name="info.circle.fill" color="#2196F3" />
-          <ThemedText style={styles.emergencyLabel}>Notas médicas:</ThemedText>
+          <ThemedText style={styles.emergencyLabel}>Notas generales:</ThemedText>
           <ThemedText style={styles.emergencyValue}>{userData.medicalNotes || 'Ninguna'}</ThemedText>
         </View>
       </View>
 
-      {showSettings && (
-        <ThemedView style={styles.settingsMenu}>
-          <TouchableOpacity 
-            style={styles.settingsOption}
-            onPress={() => {
-              setShowSettings(false);
-              router.push('/edit-profile');
-            }}
-          >
-            <IconSymbol size={20} name="pencil" color="#2196F3" />
-            <ThemedText style={styles.settingsOptionText}>Editar Perfil</ThemedText>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.settingsOption}
-            onPress={() => {
-              setShowSettings(false);
-              router.push('/panic-settings');
-            }}
-          >
-            <IconSymbol size={20} name="exclamationmark.triangle.fill" color="#FF3B30" />
-            <ThemedText style={styles.settingsOptionText}>Configurar Botón de Pánico</ThemedText>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.settingsOption}
-            onPress={() => {
-              Alert.alert(
-                'Cerrar Sesión',
-                '¿Estás seguro de que deseas cerrar sesión?',
-                [
-                  {
-                    text: 'Cancelar',
-                    style: 'cancel',
-                    onPress: () => setShowSettings(false)
-                  },
-                  {
-                    text: 'Cerrar Sesión',
-                    style: 'destructive',
-                    onPress: handleLogout
-                  }
-                ]
-              );
-            }}
-          >
-            <IconSymbol size={20} name="arrow.right.square.fill" color="#FF6B6B" />
-            <ThemedText style={styles.settingsOptionText}>Cerrar Sesión</ThemedText>
-          </TouchableOpacity>
-        </ThemedView>
-      )}
-
+      {/* Tarjeta de información médica */}
       <ThemedView style={styles.card}>
         <ThemedText type="subtitle">Información Médica</ThemedText>
         <View style={styles.infoRow}>
-          <IconSymbol size={24} name="heart.fill" color="#FF6B6B" />
+          <IconSymbol size={20} name="drop.fill" color="#2196F3" />
           <ThemedText style={styles.infoText}>Tipo de Sangre: {userData.bloodType || 'No especificado'}</ThemedText>
         </View>
         <View style={styles.infoRow}>
-          <IconSymbol size={24} name="exclamationmark.triangle.fill" color="#FFD93D" />
+          <IconSymbol size={20} name="exclamationmark.triangle.fill" color="#FFD93D" />
           <ThemedText style={styles.infoText}>Alergias: {userData.allergies || 'Ninguna'}</ThemedText>
+        </View>
+        <View style={styles.infoRow}>
+          <IconSymbol size={20} name="cross.case.fill" color="#9C27B0" />
+          <ThemedText style={styles.infoText}>Enfermedades crónicas: {userData.chronicDiseases || 'Ninguna'}</ThemedText>
+        </View>
+        <View style={styles.infoRow}>
+          <IconSymbol size={20} name="pills.fill" color="#4CAF50" />
+          <ThemedText style={styles.infoText}>Medicamento importante: {userData.importantMedication || 'No especificado'}</ThemedText>
         </View>
       </ThemedView>
 
+      {/* Tarjeta de medicamentos */}
       <ThemedView style={styles.card}>
         <ThemedText type="subtitle">Medicamentos</ThemedText>
         {medications.length > 0 ? (
@@ -282,6 +306,10 @@ export default function ProfileScreen() {
                   <IconSymbol size={20} name="alarm.fill" color="#FF6B6B" />
                   <ThemedText style={styles.detailText}>Hora: {medication.time}</ThemedText>
                 </View>
+                <View style={styles.detailRow}>
+                  <IconSymbol size={20} name="info.circle.fill" color="#2196F3" />
+                  <ThemedText style={styles.detailText}>Notas: {medication.notes}</ThemedText>
+                </View>
               </View>
             </View>
           ))
@@ -290,16 +318,19 @@ export default function ProfileScreen() {
         )}
       </ThemedView>
 
+      {/* Tarjeta de contactos de emergencia */}
       <ThemedView style={styles.card}>
         <ThemedText type="subtitle">Contactos de Emergencia</ThemedText>
-        {userData.emergencyContacts && userData.emergencyContacts.length > 0 ? (
-          userData.emergencyContacts.map((contact, index) => (
-            <View key={index} style={styles.contactCard}>
+        {emergencyContacts.length > 0 ? (
+          emergencyContacts.map((contact, index) => (
+            <View key={contact.id || index} style={styles.contactCard}>
               <IconSymbol size={24} name="person.fill" color="#4CAF50" />
               <View style={styles.contactInfo}>
                 <ThemedText style={styles.contactName}>{contact.name}</ThemedText>
                 <ThemedText style={styles.contactPhone}>{contact.phone}</ThemedText>
                 <ThemedText style={styles.contactRelation}>{contact.relation}</ThemedText>
+                {contact.address ? <ThemedText style={styles.contactRelation}>{contact.address}</ThemedText> : null}
+                {contact.notes ? <ThemedText style={styles.contactRelation}>{contact.notes}</ThemedText> : null}
               </View>
             </View>
           ))
