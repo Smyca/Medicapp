@@ -1,0 +1,17 @@
+# En el .gitignore principal
+node_modules/
+.next/
+out/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env.local
+.env*.local
+.DS_Store
+*.pem
+
+# Si tu proyecto React Native/Expo está en una subcarpeta 'mobile'
+mobile/node_modules/
+mobile/android/build/
+mobile/ios/build/
+mobile/.gradle/
