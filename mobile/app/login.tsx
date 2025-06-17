@@ -2,11 +2,11 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router } from 'expo-router';
+import { router, Link } from 'expo-router';
 import { useState } from 'react';
-import { Alert, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, TextInput, TouchableOpacity, View, Text } from 'react-native';
 
-export default function LoginScreen() {
+export default function RegistroUsuario() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -85,8 +85,12 @@ export default function LoginScreen() {
 
       <View style={styles.footer}>
         <ThemedText style={styles.footerText}>
-          ¿No tienes una cuenta?{' '}
-          <ThemedText style={styles.registerText}>Regístrate aquí</ThemedText>
+          ¿No tienes una cuenta?{" "}
+          <Link href="/(tabs)/registrousuario">
+            <TouchableOpacity>
+              <Text>Regístrate aquí</Text>
+            </TouchableOpacity>
+          </Link>
         </ThemedText>
       </View>
     </View>
