@@ -1,0 +1,22 @@
+
+----KPI------
+Lista de usuarios
+Medicamentos inscritos
+Reportes
+Exportación a PDF / Excel
+-------------------
+
+----Graficos------
+registro de usuarios semanal / estadistica
+Consumo de medicamentos por categoría 
+
+
+-------------------
+
+-----Gestión de Usuarios------
+Filtro por correo o nombre
+Habilitar/deshabilitar cuentas
+Enviar notificaciones o correos masivos
+Plantillas de correo (registro, recuperación de contraseña, alertas de stock)
+
+--------

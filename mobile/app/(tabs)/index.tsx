@@ -55,6 +55,25 @@ export default function ProfileScreen() {
       const usuarioId = await AsyncStorage.getItem('usuarioId');
       if (!usuarioId) return;
 
+      // Obtener datos del usuario
+      const usuarioRes = await fetch(`http://localhost:8080/usuarios/${usuarioId}`);
+      let name = '', age = '';
+      if (usuarioRes.ok) {
+        const data = await usuarioRes.json();
+        name = data.nombre || '';
+        if (data.fechaNacimiento) {
+          // Calcular edad
+          const birthDate = new Date(data.fechaNacimiento);
+          const today = new Date();
+          let years = today.getFullYear() - birthDate.getFullYear();
+          const m = today.getMonth() - birthDate.getMonth();
+          if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            years--;
+          }
+          age = years.toString();
+        }
+      }
+
       // Info de emergencia
       const infoEmergenciaRes = await fetch(`http://localhost:8080/info-emergencia/usuario/${usuarioId}`);
       let address = '', medicalNotes = '';
@@ -106,6 +125,9 @@ export default function ProfileScreen() {
       }
 
       setUserData({
+        ...userData,
+        name,
+        age,
         address,
         medicalNotes,
         bloodType,

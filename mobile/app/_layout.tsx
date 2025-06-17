@@ -26,12 +26,14 @@ export default function RootLayout() {
 
   const checkAuth = async () => {
     try {
-      const token = await AsyncStorage.getItem('userToken');
-      const isLoginScreen = segments[0] === 'login';
-      
-      if (!token) {
+      const usuarioId = await AsyncStorage.getItem('usuarioId');
+      const flatSegments = segments.flat();
+      const isLoginScreen = flatSegments.includes('login');
+      const isRegistroScreen = flatSegments.includes('registrousuario');
+
+      if (!usuarioId && !isLoginScreen && !isRegistroScreen) {
         router.replace('/login');
-      } else if (token && isLoginScreen) {
+      } else if (usuarioId && (isLoginScreen || isRegistroScreen)) {
         router.replace('/(tabs)');
       }
     } catch (error) {
