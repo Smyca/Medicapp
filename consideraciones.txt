@@ -1,0 +1,17 @@
+Se debe crear register
+considerar foto de perfil para tipo blob en bd
+agregar button de cancelacion en editar perfil crud o flecha de redireccion para volver.
+Opcion de redireccion al entrar a menus desplegables como:
+	-editar perfil
+	-registrar medicamento
+agregar boton de eliminar directamente en pantalla lista de medicamento y no dentro de opciones.
+
+definir detalles de limites de varchar en columnas de cada tabla.
+Se debe afinar detalles de
+	-IA
+	-Maps
+	-Foto de perfil + datos de user (registro debe estar listo para esto)
+	-
+-Esclarecer tipo de dato para columna hora en medicamento y ver logica de uso. Ya que si se selecciona debe haber un entendimiento entre hora y frecuencia.
+-En relacion a lo anterior, ahondar mas en notificaciones de dispositivo respecto a hora.
+
