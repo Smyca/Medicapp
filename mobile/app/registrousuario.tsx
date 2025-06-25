@@ -107,22 +107,24 @@ export default function RegistroUsuario() {
           Fecha de nacimiento
         </Text>
         {Platform.OS === "web" ? (
-          <input
-            type="date"
-            style={{
-              backgroundColor: "#181A20",
-              borderColor: "#333",
-              borderWidth: 1,
-              borderRadius: 8,
-              marginBottom: 12,
-              padding: 10,
-              color: "#fff",
-              width: "100%",
-            }}
-            value={form.fechaNacimiento}
-            onChange={(e) => handleChange("fechaNacimiento", e.target.value)}
-            max={new Date().toISOString().split("T")[0]}
-          />
+          <View style={{ width: "100%", marginBottom: 12 }}>
+            <input
+              type="date"
+              style={{
+                backgroundColor: "#181A20",
+                borderColor: "#333",
+                borderWidth: 1,
+                borderRadius: 8,
+                padding: 10,
+                color: "#fff",
+                width: "100%", // Asegura que el input no se salga
+                boxSizing: "border-box", // Importante para que respete el padding y el ancho
+              }}
+              value={form.fechaNacimiento}
+              onChange={(e) => handleChange("fechaNacimiento", e.target.value)}
+              max={new Date().toISOString().split("T")[0]}
+            />
+          </View>
         ) : (
           <>
             <TouchableOpacity

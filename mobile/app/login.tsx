@@ -4,7 +4,15 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, Link } from 'expo-router';
 import { useState } from 'react';
-import { Alert, StyleSheet, TextInput, TouchableOpacity, View, Text } from 'react-native';
+import { Alert, StyleSheet, TextInput, TouchableOpacity, View, Text, Platform } from 'react-native';
+
+function showAlert(title: string, message: string) {
+  if (Platform.OS === 'web') {
+    window.alert(`${title}\n${message}`);
+  } else {
+    Alert.alert(title, message);
+  }
+}
 
 export default function RegistroUsuario() {
   const [email, setEmail] = useState('');
@@ -13,7 +21,7 @@ export default function RegistroUsuario() {
   const handleLogin = async () => {
     try {
       if (!email || !password) {
-        Alert.alert('Error', 'Por favor ingresa tu email y contraseña');
+        showAlert('Error', 'Por favor ingresa tu email y contraseña');
         return;
       }
 
@@ -31,11 +39,11 @@ export default function RegistroUsuario() {
 
         router.replace('/(tabs)');
       } else {
-        Alert.alert('Error', data.message || 'Usuario o contraseña incorrectos');
+        showAlert('Error', data.message || 'Usuario o contraseña incorrectos');
       }
     } catch (error) {
       console.error('Error during login:', error);
-      Alert.alert('Error', 'Ocurrió un error al iniciar sesión');
+      showAlert('Error', 'Ocurrió un error al iniciar sesión');
     }
   };
 

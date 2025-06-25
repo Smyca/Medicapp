@@ -2,7 +2,11 @@ package Controller;
 
 
 import Model.Usuario;
+import Model.InfoEmergency;
+import Model.InfoMedica;
 import Repository.UsuarioRepository;
+import Repository.InfoEmergencyRepository;
+import Repository.InfoMedicaRepository;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
@@ -16,6 +20,12 @@ public class UsuarioResource {
 
     @Inject
     UsuarioRepository repo;
+
+    @Inject
+    InfoEmergencyRepository infoEmergencyRepository;
+
+    @Inject
+    InfoMedicaRepository infoMedicaRepository;
 
     @GET
     public List<Usuario> listAll() {
@@ -37,6 +47,15 @@ public class UsuarioResource {
     public Response create(Usuario usuario, @Context UriInfo uriInfo) {
         // En producción, aquí deberías hashear la contraseña
         repo.persist(usuario);
+
+
+        InfoMedica infoMedica = new InfoMedica();
+        infoMedica.setUsuarioId(usuario.getId());
+        infoMedicaRepository.persist(infoMedica);
+        InfoEmergency info = new InfoEmergency();
+        info.setUsuarioId(usuario.getId());
+        infoEmergencyRepository.persist(info);
+
         UriBuilder builder = uriInfo.getAbsolutePathBuilder().path(usuario.getId().toString());
         return Response.created(builder.build()).entity(usuario).build();
     }
