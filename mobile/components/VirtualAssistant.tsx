@@ -1,10 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const OPENAI_API_KEY = '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'; // <-- Pega aquí tu API Key
+const GEMINI_API_KEY = "AIzaSyAJXm75JWQX7f0wiy2sO1yjLOfIsijfTQo";
 
 export default function VirtualAssistant() {
+  
   const [messages, setMessages] = useState<Array<{text: string, isUser: boolean}>>([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -12,39 +14,27 @@ export default function VirtualAssistant() {
   const handleSendMessage = async () => {
     if (inputText.trim() === '' || loading) return;
 
-    // Agregar mensaje del usuario
     setMessages(prev => [...prev, { text: inputText, isUser: true }]);
     setLoading(true);
 
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            { role: 'system', content: 'Eres un asistente virtual médico, responde de forma clara y sencilla.' },
-            ...[...messages, { text: inputText, isUser: true }].map(m => ({
-              role: m.isUser ? 'user' : 'assistant',
-              content: m.text,
-            }))
-          ],
-          max_tokens: 200,
-          temperature: 0.7,
-        }),
-      });
-      const data = await response.json();
-      if (data.error) {
-        setMessages(prev => [...prev, { text: `Error: ${data.error.message}`, isUser: false }]);
-      } else {
-        const aiText = data.choices?.[0]?.message?.content?.trim() || 'Lo siento, no pude responder en este momento.';
-        setMessages(prev => [...prev, { text: aiText, isUser: false }]);
-      }
+      const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+      // Construir historial de mensajesa
+      const chatHistory = [
+        { role: "user", parts: [{ text: "Eres un asistente virtual médico, responde de forma clara y sencilla." }] },
+        ...[...messages, { text: inputText, isUser: true }].map(m => ({
+          role: m.isUser ? "user" : "model",
+          parts: [{ text: m.text }],
+        })),
+      ];
+
+      const result = await model.generateContent({ contents: chatHistory });
+      const aiText = result.response.text().trim() || "Lo siento, no pude responder en este momento.";
+      setMessages(prev => [...prev, { text: aiText, isUser: false }]);
     } catch (e) {
-      setMessages(prev => [...prev, { text: 'Ocurrió un error al conectar con la IA.', isUser: false }]);
+      setMessages(prev => [...prev, { text: "Ocurrió un error al conectar con la IA.", isUser: false }]);
     }
     setInputText('');
     setLoading(false);
@@ -135,4 +125,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-}); 
+});
