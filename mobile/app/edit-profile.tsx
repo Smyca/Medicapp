@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { API_URL } from '@env';
 
 export default function EditProfileScreen() {
   // Estados para cada grupo de datos
@@ -32,7 +33,7 @@ export default function EditProfileScreen() {
       if (!usuarioId) return;
 
       // Info de emergencia
-      const infoEmergenciaRes = await fetch(`http://localhost:8080/info-emergencia/usuario/${usuarioId}`);
+      const infoEmergenciaRes = await fetch(`${API_URL}/info-emergencia/usuario/${usuarioId}`);
       if (infoEmergenciaRes.ok) {
         const data = await infoEmergenciaRes.json();
         setEmergencyData({
@@ -42,7 +43,7 @@ export default function EditProfileScreen() {
       }
 
       // Info médica
-      const infoMedicaRes = await fetch(`http://localhost:8080/info-medica/usuario/${usuarioId}`);
+      const infoMedicaRes = await fetch(`${API_URL}/info-medica/usuario/${usuarioId}`);
       if (infoMedicaRes.ok) {
         const data = await infoMedicaRes.json();
         setMedicalData({
@@ -54,7 +55,7 @@ export default function EditProfileScreen() {
       }
 
       // Contactos de emergencia
-      const contactosRes = await fetch(`http://localhost:8080/contactos-emergencia/usuario/${usuarioId}`);
+      const contactosRes = await fetch(`${API_URL}/contactos-emergencia/usuario/${usuarioId}`);
       if (contactosRes.ok) {
         const data = await contactosRes.json();
         setEmergencyContacts(
@@ -98,7 +99,7 @@ export default function EditProfileScreen() {
       if (!usuarioId) return;
 
       // Actualizar info de emergencia
-      await fetch(`http://localhost:8080/info-emergencia/usuario/${usuarioId}`, {
+      await fetch(`${API_URL}/info-emergencia/usuario/${usuarioId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -108,7 +109,7 @@ export default function EditProfileScreen() {
       });
 
       // Actualizar info médica
-      await fetch(`http://localhost:8080/info-medica/usuario/${usuarioId}`, {
+      await fetch(`${API_URL}/info-medica/usuario/${usuarioId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -120,7 +121,7 @@ export default function EditProfileScreen() {
       });
 
       // Actualizar contactos de emergencia
-      await fetch(`http://localhost:8080/contactos-emergencia/usuario/${usuarioId}`, {
+      await fetch(`${API_URL}/contactos-emergencia/usuario/${usuarioId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(

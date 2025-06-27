@@ -5,6 +5,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, Link } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, TextInput, TouchableOpacity, View, Text, Platform } from 'react-native';
+import { API_URL } from '@env';
+
+console.log('API_URL:', API_URL);
 
 function showAlert(title: string, message: string) {
   if (Platform.OS === 'web') {
@@ -25,7 +28,7 @@ export default function RegistroUsuario() {
         return;
       }
 
-      const response = await fetch('http://localhost:8080/auth/login', {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: email, password }),
@@ -94,9 +97,9 @@ export default function RegistroUsuario() {
       <View style={styles.footer}>
         <ThemedText style={styles.footerText}>
           ¿No tienes una cuenta?{" "}
-          <Link href="/(tabs)/registrousuario">
+          <Link href="/registrousuario" asChild>
             <TouchableOpacity>
-              <Text>Regístrate aquí</Text>
+              <Text style={styles.registerText}>Regístrate aquí</Text>
             </TouchableOpacity>
           </Link>
         </ThemedText>

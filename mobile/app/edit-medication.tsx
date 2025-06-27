@@ -6,7 +6,7 @@ import * as Notifications from 'expo-notifications';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Platform, ScrollView, StyleSheet, Switch, TextInput, TouchableOpacity, View } from 'react-native';
-
+import { API_URL } from '@env';
 export default function EditMedicationScreen() {
   const { id } = useLocalSearchParams();
   const [medication, setMedication] = useState({
@@ -56,7 +56,7 @@ export default function EditMedicationScreen() {
     try {
       
       // Cargar medicamento desde el backend usando el id
-      const res = await fetch(`http://localhost:8080/medicamentos/${id}`);
+      const res = await fetch(`${API_URL}/medicamentos/${id}`);
       if (res.ok) {
         const med = await res.json();
         setMedication({
@@ -106,7 +106,7 @@ export default function EditMedicationScreen() {
         Alert.alert('Error', 'No se encontró el usuario');
         return;
       }
-      const res = await fetch(`http://localhost:8080/medicamentos/${id}`, {
+      const res = await fetch(`${API_URL}/medicamentos/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -152,7 +152,7 @@ export default function EditMedicationScreen() {
       const confirmed = window.confirm('¿Estás seguro de que deseas eliminar este medicamento?');
       if (!confirmed) return;
       try {
-        const res = await fetch(`http://localhost:8080/medicamentos/${id}`, {
+        const res = await fetch(`${API_URL}/medicamentos/${id}`, {
           method: 'DELETE',
         });
         if (!res.ok) {
@@ -174,7 +174,7 @@ export default function EditMedicationScreen() {
             style: 'destructive',
             onPress: async () => {
               try {
-                const res = await fetch(`http://localhost:8080/medicamentos/${id}`, {
+                const res = await fetch(`${API_URL}/medicamentos/${id}`, {
                   method: 'DELETE',
                 });
                 if (!res.ok) {

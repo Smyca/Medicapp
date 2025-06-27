@@ -7,7 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-
+import { API_URL } from '@env';
 interface Medication {
   id: string;
   name: string;
@@ -56,7 +56,7 @@ export default function ProfileScreen() {
       if (!usuarioId) return;
 
       // Obtener datos del usuario
-      const usuarioRes = await fetch(`http://localhost:8080/usuarios/${usuarioId}`);
+      const usuarioRes = await fetch(`${API_URL}/usuarios/${usuarioId}`);
       let name = '', age = '';
       if (usuarioRes.ok) {
         const data = await usuarioRes.json();
@@ -75,7 +75,7 @@ export default function ProfileScreen() {
       }
 
       // Info de emergencia
-      const infoEmergenciaRes = await fetch(`http://localhost:8080/info-emergencia/usuario/${usuarioId}`);
+      const infoEmergenciaRes = await fetch(`${API_URL}/info-emergencia/usuario/${usuarioId}`);
       let address = '', medicalNotes = '';
       if (infoEmergenciaRes.ok) {
         const data = await infoEmergenciaRes.json();
@@ -84,7 +84,7 @@ export default function ProfileScreen() {
       }
 
       // Info médica
-      const infoMedicaRes = await fetch(`http://localhost:8080/info-medica/usuario/${usuarioId}`);
+      const infoMedicaRes = await fetch(`${API_URL}/info-medica/usuario/${usuarioId}`);
       let bloodType = '', allergies = '', chronicDiseases = '', importantMedication = '';
       if (infoMedicaRes.ok) {
         const data = await infoMedicaRes.json();
@@ -95,7 +95,7 @@ export default function ProfileScreen() {
       }
 
       // Medicamentos
-      const medicamentosRes = await fetch(`http://localhost:8080/medicamentos/usuario/${usuarioId}`);
+      const medicamentosRes = await fetch(`${API_URL}/medicamentos/usuario/${usuarioId}`);
       let meds: Medication[] = [];
       if (medicamentosRes.ok) {
         const data = await medicamentosRes.json();
@@ -110,7 +110,7 @@ export default function ProfileScreen() {
       }
 
       // Contactos de emergencia
-      const contactosRes = await fetch(`http://localhost:8080/contactos-emergencia/usuario/${usuarioId}`);
+      const contactosRes = await fetch(`${API_URL}/contactos-emergencia/usuario/${usuarioId}`);
       let contacts: EmergencyContact[] = [];
       if (contactosRes.ok) {
         const data = await contactosRes.json();

@@ -6,7 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-
+import { API_URL } from '@env';
 interface Medication {
   id: string;
   name: string;
@@ -23,7 +23,7 @@ export default function MedicationsScreen() {
     try {
       const usuarioId = await AsyncStorage.getItem('usuarioId');
       if (!usuarioId) return;
-      const res = await fetch(`http://localhost:8080/medicamentos/usuario/${usuarioId}`);
+      const res = await fetch(`${API_URL}/medicamentos/usuario/${usuarioId}`);
       if (res.ok) {
         const data = await res.json();
         setMedications(

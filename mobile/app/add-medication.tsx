@@ -6,7 +6,7 @@ import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Platform, ScrollView, StyleSheet, Switch, TextInput, TouchableOpacity, View } from 'react-native';
-
+import { API_URL } from '@env';
 const FREQUENCY_OPTIONS = [
   'Cada 8 horas',
   'Cada 12 horas',
@@ -58,7 +58,7 @@ export default function AddMedicationScreen() {
         Alert.alert('Error', 'No se encontró el usuario');
         return;
       }
-      const res = await fetch('http://localhost:8080/medicamentos', {
+      const res = await fetch(`${API_URL}/medicamentos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
