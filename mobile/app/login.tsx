@@ -17,14 +17,42 @@ function showAlert(title: string, message: string) {
   }
 }
 
+// Guardar usuario localmente
+async function setUserData(email: string, password: string) {
+  const user = { email, password };
+  await AsyncStorage.setItem('localUser', JSON.stringify(user));
+}
+
+// Validar usuario local
+async function checkLocalUser(email: string, password: string) {
+  const userStr = await AsyncStorage.getItem('localUser');
+  if (!userStr) return false;
+  const user = JSON.parse(userStr);
+  return user.email === email && user.password === password;
+}
+
 export default function RegistroUsuario() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  // Crear usuario local por defecto al montar el componente
+  useState(() => {
+    setUserData('1234', 'pass');
+  });
 
   const handleLogin = async () => {
     try {
       if (!email || !password) {
         showAlert('Error', 'Por favor ingresa tu email y contraseña');
+        return;
+      }
+
+      // Intentar login local primero
+      const isLocal = await checkLocalUser(email, password);
+      if (isLocal) {
+        await AsyncStorage.setItem('userEmail', email);
+        await AsyncStorage.setItem('usuarioId', '1'); // ID fijo para local
+        router.replace('/(tabs)');
         return;
       }
 

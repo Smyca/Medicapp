@@ -7,16 +7,9 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Platform, ScrollView, StyleSheet, Switch, TextInput, TouchableOpacity, View } from 'react-native';
 import { API_URL } from '@env';
-const FREQUENCY_OPTIONS = [
-  'Cada 8 horas',
-  'Cada 12 horas',
-  'Cada 24 horas',
-];
-const HOUR_OPTIONS = [
-  "06:00", "07:00", "08:00", "09:00", "10:00", "11:00",
-  "12:00", "13:00", "14:00", "15:00", "16:00", "17:00",
-  "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"
-];
+const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) =>
+  `${i.toString().padStart(2, '0')}:00`
+);
 
 export default function AddMedicationScreen() {
   const [medication, setMedication] = useState({
@@ -121,17 +114,24 @@ export default function AddMedicationScreen() {
   }, []);
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
-      {/* Botón flotante grande de volver */}
-      <TouchableOpacity
-        onPress={() => router.back()}
-        style={styles.fabBack}
-        accessibilityLabel="Volver"
-      >
-        <IconSymbol size={32} name="chevron.left" color="#fff" />
-      </TouchableOpacity>
-      <ScrollView contentContainerStyle={{ paddingTop: 80, paddingBottom: 30 }}>
-        <ThemedText type="title" style={styles.title}>Agregar Medicamento</ThemedText>
+    <View style={{ flex: 1, backgroundColor: '#181A20' }}>
+      {/* Header con botón de volver alineado al título */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 70, marginBottom: 10, justifyContent: 'center' }}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.squareBackBtn}
+          accessibilityLabel="Volver"
+        >
+          <ThemedText style={{ color: '#fff', fontSize: 28, fontWeight: 'bold', marginTop: -2 }}>&lt;</ThemedText>
+        </TouchableOpacity>
+        <ThemedText
+          type="title"
+          style={[styles.title, { textAlign: 'left', marginLeft: 12 }]}
+        >
+          Agregar Medicamento
+        </ThemedText>
+      </View>
+      <ScrollView contentContainerStyle={{ paddingTop: 10, paddingBottom: 30 }}>
         <ThemedView style={styles.form}>
           <View style={styles.inputGroup}>
             <ThemedText style={styles.label}>Nombre del Medicamento *</ThemedText>
@@ -162,27 +162,29 @@ export default function AddMedicationScreen() {
           </View>
           <View style={styles.inputGroup}>
             <ThemedText style={styles.label}>Frecuencia *</ThemedText>
-            <View style={styles.optionsRow}>
-              {FREQUENCY_OPTIONS.map(opt => (
-                <TouchableOpacity
-                  key={opt}
-                  style={[styles.optionBtn, medication.frequency === opt && styles.optionBtnSelected]}
-                  onPress={() => setMedication({ ...medication, frequency: opt })}
-                >
-                  <ThemedText style={[styles.optionBtnText, medication.frequency === opt && styles.optionBtnTextSelected]}>{opt}</ThemedText>
-                </TouchableOpacity>
-              ))}
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <ThemedText style={{ fontSize: 18, color: '#A9A9A9' }}>Cada </ThemedText>
+              <TextInput
+                style={[styles.input, { width: 60, marginRight: 8, marginLeft: 4, textAlign: 'center' }]}
+                value={medication.frequency}
+                onChangeText={text => {
+                  // Solo permitir números, máximo 2 dígitos, entre 1 y 24
+                  let numeric = text.replace(/\D/g, '').slice(0, 2);
+                  if (numeric) {
+                    let num = parseInt(numeric, 10);
+                    if (num < 1) numeric = '1';
+                    else if (num > 24) numeric = '24';
+                    else numeric = num.toString();
+                  }
+                  setMedication({ ...medication, frequency: numeric });
+                }}
+                placeholder="8"
+                placeholderTextColor="#aaa"
+                keyboardType="numeric"
+                maxLength={2}
+              />
+              <ThemedText style={{ fontSize: 18, color: '#A9A9A9' }}>horas</ThemedText>
             </View>
-            <TextInput
-              style={styles.input}
-              value={medication.frequency}
-              onChangeText={(text) => {
-                if (text.length <= 25) setMedication({ ...medication, frequency: text });
-              }}
-              placeholder="Ej: Cada 8 horas"
-              placeholderTextColor="#aaa"
-              maxLength={25}
-            />
           </View>
           <View style={styles.inputGroup}>
             <ThemedText style={styles.label}>Hora *</ThemedText>
@@ -233,33 +235,18 @@ export default function AddMedicationScreen() {
 }
 
 const styles = StyleSheet.create({
-  fabBack: {
-    position: 'absolute',
-    top: 70,
-    left: 20,
-    zIndex: 100,
-    backgroundColor: '#2196F3',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 18,
     marginTop: 10,
-    color: '#222',
+    color: '#fff', // Cambia a blanco para modo oscuro
   },
   form: {
     padding: 20,
+    backgroundColor: '#181A20', // Fondo del formulario igual al fondo general
+    borderRadius: 0,
   },
   inputGroup: {
     marginBottom: 22,
@@ -268,16 +255,17 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: '#222',
+    color: '#A9A9A9',
   },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: '#23272f', // Fondo oscuro para los inputs
     borderWidth: 1,
-    borderColor: '#bbb',
+    borderColor: '#444',        // Borde más oscuro
     borderRadius: 10,
     padding: 16,
     fontSize: 20,
     marginTop: 4,
+    color: '#fff',              // Texto blanco en los inputs
   },
   notesInput: {
     height: 100,
@@ -328,5 +316,14 @@ const styles = StyleSheet.create({
   optionBtnTextSelected: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  squareBackBtn: {
+    width: 40,
+    height: 40,
+    backgroundColor: '#222', 
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
   },
 });

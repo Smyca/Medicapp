@@ -20,6 +20,7 @@ export default function EditProfileScreen() {
     importantMedication: '',
   });
   const [emergencyContacts, setEmergencyContacts] = useState([
+    { name: '', phone: '', relation: '' },
     { name: '', phone: '', relation: '' }
   ]);
 
@@ -58,15 +59,18 @@ export default function EditProfileScreen() {
       const contactosRes = await fetch(`${API_URL}/contactos-emergencia/usuario/${usuarioId}`);
       if (contactosRes.ok) {
         const data = await contactosRes.json();
-        setEmergencyContacts(
-          data.length > 0
-            ? data.map((c: any) => ({
-                name: c.nombre || '',
-                phone: c.telefono || '',
-                relation: c.relacion || '',
-              }))
-            : [{ name: '', phone: '', relation: '' }]
-        );
+        // Siempre tener 2 contactos (rellenar con vacíos si faltan)
+        let contacts = data.length > 0
+          ? data.map((c: any) => ({
+              name: c.nombre || '',
+              phone: c.telefono || '',
+              relation: c.relacion || '',
+            }))
+          : [];
+        while (contacts.length < 2) {
+          contacts.push({ name: '', phone: '', relation: '' });
+        }
+        setEmergencyContacts(contacts.slice(0, 2));
       }
     } catch (error) {
       Alert.alert('Error', 'No se pudo cargar la información');
@@ -84,12 +88,6 @@ export default function EditProfileScreen() {
     const updatedContacts = [...emergencyContacts];
     updatedContacts[index][field] = value;
     setEmergencyContacts(updatedContacts);
-  };
-  const addContact = () => {
-    setEmergencyContacts([...emergencyContacts, { name: '', phone: '', relation: '' }]);
-  };
-  const removeContact = (index: number) => {
-    setEmergencyContacts(emergencyContacts.filter((_, i) => i !== index));
   };
 
   // Guardar cambios
@@ -143,12 +141,14 @@ export default function EditProfileScreen() {
   return (
     <ScrollView style={styles.container}>
       <LinearGradient
-        colors={["#2196F3", "#6DD5FA", "#ffffff"]}
+        colors={["#23272f", "#23272f", "#23272f"]}
         style={styles.gradientHeader}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
       >
-        <ThemedText type="title" style={styles.headerTitle}>Editar Perfil</ThemedText>
+        <ThemedText type="title" style={[styles.headerTitle, { color: '#fff' }]}>
+          Editar Perfil
+        </ThemedText>
       </LinearGradient>
 
       {/* Información de emergencia */}
@@ -223,21 +223,14 @@ export default function EditProfileScreen() {
               onChangeText={text => handleContactChange(idx, 'relation', text)}
               placeholder="Relación (hijo, vecino, etc.)"
             />
-            {emergencyContacts.length > 1 && (
-              <TouchableOpacity style={styles.removeContactBtn} onPress={() => removeContact(idx)}>
-                <IconSymbol size={18} name="trash.fill" color="#FF6B6B" />
-                <ThemedText style={styles.removeContactText}>Eliminar</ThemedText>
-              </TouchableOpacity>
-            )}
           </View>
         ))}
-        <TouchableOpacity style={styles.addContactBtn} onPress={addContact}>
-          <IconSymbol size={20} name="plus.circle.fill" color="#2196F3" />
-          <ThemedText style={styles.addContactText}>Agregar contacto</ThemedText>
-        </TouchableOpacity>
         <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
           <IconSymbol size={22} name="checkmark.circle.fill" color="#fff" />
           <ThemedText style={styles.saveBtnText}>Guardar cambios</ThemedText>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+          <ThemedText style={styles.backBtnText}>Volver</ThemedText>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -247,39 +240,40 @@ export default function EditProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#eaf6fb',
+    backgroundColor: '#181A20', // Igual que index.tsx
   },
   gradientHeader: {
-    paddingTop: 40,
+    paddingTop: 70, // antes 40, ahora 70 para dejar espacio al banner
     paddingBottom: 30,
     alignItems: 'center',
     justifyContent: 'center',
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
-    shadowColor: '#2196F3',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
     elevation: 10,
     marginBottom: 10,
     position: 'relative',
+    backgroundColor: '#23272f', // Igual que index.tsx
   },
   headerTitle: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#222',
+    color: '#fff', // blanco
     marginBottom: 10,
     textShadowColor: '#6DD5FA',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 6,
   },
   formCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#23272f', // Igual que las tarjetas de index.tsx
     marginHorizontal: 16,
     marginVertical: 16,
     padding: 18,
     borderRadius: 18,
-    shadowColor: '#2196F3',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
@@ -287,19 +281,20 @@ const styles = StyleSheet.create({
   },
   label: {
     fontWeight: 'bold',
-    color: '#222',
+    color: '#A9A9A9',
     marginTop: 10,
     marginBottom: 2,
     fontSize: 15,
   },
   input: {
-    backgroundColor: '#f8fafd',
+    backgroundColor: '#181A20',
     borderRadius: 8,
     padding: 10,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: '#444',
     fontSize: 15,
+    color: '#fff',
   },
   sectionTitle: {
     fontWeight: 'bold',
@@ -309,12 +304,12 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   contactCard: {
-    backgroundColor: '#f8fafd',
+    backgroundColor: '#23272f',
     borderRadius: 10,
     padding: 10,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: '#181A20',
   },
   addContactBtn: {
     flexDirection: 'row',
@@ -359,6 +354,20 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     marginLeft: 10,
+    fontSize: 16,
+  },
+  backBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#444950', // Gris intermedio
+    padding: 12,
+    borderRadius: 12,
+    marginTop: 12,
+  },
+  backBtnText: {
+    color: '#2196F3',
+    fontWeight: 'bold',
     fontSize: 16,
   },
 });

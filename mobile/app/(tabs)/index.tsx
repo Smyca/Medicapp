@@ -179,7 +179,7 @@ export default function ProfileScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingTop: 0 }}>
       <LinearGradient
-        colors={["#2196F3", "#6DD5FA", "#ffffff"]}
+        colors={["#23272f", "#23272f", "#23272f"]} // Fondo gris oscuro uniforme
         style={[styles.gradientHeader, { paddingTop: 20 }]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
@@ -367,7 +367,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#eaf6fb',
+    backgroundColor: '#181A20', // Fondo general gris oscuro
   },
   gradientHeader: {
     paddingTop: 40,
@@ -376,13 +376,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
-    shadowColor: '#2196F3',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
     elevation: 10,
     marginBottom: 10,
     position: 'relative',
+    backgroundColor: '#23272f', // Fondo header gris oscuro
   },
   settingsButton: {
     position: 'absolute',
@@ -391,10 +392,10 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   gearBg: {
-    backgroundColor: 'rgba(0,0,0,0.15)',
+    backgroundColor: 'rgba(255,255,255,0.08)',
     borderRadius: 20,
     padding: 8,
-    shadowColor: '#2196F3',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -409,7 +410,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   profileImageShadow: {
-    shadowColor: '#2196F3',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4,
     shadowRadius: 16,
@@ -417,11 +418,11 @@ const styles = StyleSheet.create({
     borderRadius: 60,
   },
   profileImageCircle: {
-    backgroundColor: '#fff',
+    backgroundColor: '#23272f',
     borderRadius: 60,
     padding: 8,
     borderWidth: 4,
-    borderColor: '#6DD5FA',
+    borderColor: '#23272f',
     alignItems: 'center',
     justifyContent: 'center',
     width: 100,
@@ -435,7 +436,7 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   editPhotoText: {
-    color: '#2196F3',
+    color: '#aaa',
     fontSize: 13,
     marginTop: 4,
     textAlign: 'center',
@@ -445,23 +446,23 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     marginTop: 8,
-    color: '#222',
-    textShadowColor: '#6DD5FA',
+    color: '#fff',
+    textShadowColor: '#000',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 6,
   },
   age: {
     fontSize: 16,
-    color: '#666',
+    color: '#aaa',
     marginBottom: 8,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#23272f', // Tarjetas gris oscuro
     marginHorizontal: 16,
     marginVertical: 10,
     padding: 18,
     borderRadius: 18,
-    shadowColor: '#2196F3',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
@@ -475,15 +476,16 @@ const styles = StyleSheet.create({
   infoText: {
     marginLeft: 10,
     fontSize: 16,
+    color: '#fff',
   },
   medicationCard: {
-    backgroundColor: '#f8fafd',
+    backgroundColor: '#23272f',
     marginVertical: 8,
     padding: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
-    shadowColor: '#6DD5FA',
+    borderColor: '#23272f',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
     shadowRadius: 8,
@@ -498,6 +500,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 10,
+    color: '#fff',
   },
   medicationDetails: {
     marginLeft: 34,
@@ -510,20 +513,21 @@ const styles = StyleSheet.create({
   detailText: {
     marginLeft: 10,
     fontSize: 14,
+    color: '#fff',
   },
   noMedications: {
     textAlign: 'center',
-    color: '#666',
+    color: '#aaa',
     marginVertical: 10,
   },
   settingsMenu: {
     position: 'absolute',
     top: 120,
     right: 30,
-    backgroundColor: '#fff',
+    backgroundColor: '#23272f',
     borderRadius: 14,
     padding: 10,
-    shadowColor: '#2196F3',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 6,
@@ -535,18 +539,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: '#181A20',
   },
   settingsOptionText: {
     marginLeft: 10,
     fontSize: 16,
+    color: '#fff',
   },
   contactCard: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: '#181A20',
   },
   contactInfo: {
     marginLeft: 10,
@@ -554,22 +559,23 @@ const styles = StyleSheet.create({
   contactName: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#fff',
   },
   contactPhone: {
     fontSize: 14,
-    color: '#666',
+    color: '#aaa',
   },
   contactRelation: {
     fontSize: 14,
-    color: '#888',
+    color: '#aaa',
   },
   noContacts: {
     textAlign: 'center',
-    color: '#666',
+    color: '#aaa',
     marginVertical: 10,
   },
   emergencyCard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#23272f',
     marginHorizontal: 16,
     marginTop: 10,
     marginBottom: 10,
@@ -602,12 +608,12 @@ const styles = StyleSheet.create({
   emergencyLabel: {
     marginLeft: 8,
     fontWeight: 'bold',
-    color: '#222',
+    color: '#fff',
     fontSize: 15,
   },
   emergencyValue: {
     marginLeft: 6,
-    color: '#444',
+    color: '#aaa',
     fontSize: 15,
     flexShrink: 1,
   },

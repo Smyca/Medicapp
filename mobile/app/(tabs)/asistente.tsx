@@ -1,6 +1,7 @@
-import VirtualAssistant from '@/components/VirtualAssistant';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+
+import VirtualAssistant from '@/components/VirtualAssistant';
 
 export default function AsistenteScreen() {
   return (
@@ -13,6 +14,6 @@ export default function AsistenteScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#181A20',
   },
-}); 
+});

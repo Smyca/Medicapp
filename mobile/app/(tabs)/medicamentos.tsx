@@ -2,7 +2,6 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
@@ -82,14 +81,9 @@ export default function MedicationsScreen() {
   };
 
   return (
-    <ThemedView style={{ flex: 1, paddingTop: 0 }}>
-      <LinearGradient
-        colors={["#2196F3", "#6DD5FA", "#eaf6fb"]}
-        style={[styles.gradientHeader, { paddingTop: 20 }]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-      >
-        <ThemedText type="title" style={styles.headerTitle}>Mis Medicamentos</ThemedText>
+    <ThemedView style={{ flex: 1, backgroundColor: '#181A20', paddingTop: 0 }}>
+      <View style={styles.headerDark}>
+        <ThemedText type="title" style={styles.headerTitleDark}>Mis Medicamentos</ThemedText>
         <TouchableOpacity 
           style={styles.addButton}
           onPress={() => router.push('/add-medication')}
@@ -98,14 +92,14 @@ export default function MedicationsScreen() {
           <IconSymbol size={28} name="plus.circle.fill" color="#fff" />
           <ThemedText style={styles.addButtonText}>Agregar Medicamento</ThemedText>
         </TouchableOpacity>
-      </LinearGradient>
+      </View>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {medications.length > 0 ? (
           medications.map((medication) => (
-            <ThemedView key={medication.id} style={styles.medicationCard}>
+            <ThemedView key={medication.id} style={styles.medicationCardDark}>
               <View style={styles.medicationHeader}>
                 <IconSymbol size={24} name="pills.fill" color="#4CAF50" />
-                <ThemedText style={styles.medicationName}>{medication.name}</ThemedText>
+                <ThemedText style={styles.medicationNameDark}>{medication.name}</ThemedText>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <TouchableOpacity
                     onPress={() => handleDeleteMedication(medication.id)}
@@ -125,20 +119,20 @@ export default function MedicationsScreen() {
               <View style={styles.medicationDetails}>
                 <View style={styles.detailRow}>
                   <IconSymbol size={20} name="drop.fill" color="#2196F3" />
-                  <ThemedText style={styles.detailText}>Dosis: {medication.dosage}</ThemedText>
+                  <ThemedText style={styles.detailTextDark}>Dosis: {medication.dosage}</ThemedText>
                 </View>
                 <View style={styles.detailRow}>
                   <IconSymbol size={20} name="clock.fill" color="#FFD93D" />
-                  <ThemedText style={styles.detailText}>Frecuencia: {medication.frequency}</ThemedText>
+                  <ThemedText style={styles.detailTextDark}>Frecuencia: {medication.frequency}</ThemedText>
                 </View>
                 <View style={styles.detailRow}>
                   <IconSymbol size={20} name="alarm.fill" color="#FF6B6B" />
-                  <ThemedText style={styles.detailText}>Hora: {medication.time}</ThemedText>
+                  <ThemedText style={styles.detailTextDark}>Hora: {medication.time}</ThemedText>
                 </View>
                 {medication.notes && (
                   <View style={styles.detailRow}>
                     <IconSymbol size={20} name="note.text" color="#9C27B0" />
-                    <ThemedText style={styles.notesText}>Notas: {medication.notes}</ThemedText>
+                    <ThemedText style={styles.notesTextDark}>Notas: {medication.notes}</ThemedText>
                   </View>
                 )}
               </View>
@@ -147,10 +141,10 @@ export default function MedicationsScreen() {
         ) : (
           <ThemedView style={styles.emptyState}>
             <IconSymbol size={64} name="pills" color="#CCCCCC" />
-            <ThemedText style={styles.emptyStateText}>
+            <ThemedText style={styles.emptyStateTextDark}>
               No hay medicamentos registrados
             </ThemedText>
-            <ThemedText style={styles.emptyStateSubtext}>
+            <ThemedText style={styles.emptyStateSubtextDark}>
               Presiona el botón "Agregar Medicamento" para comenzar
             </ThemedText>
           </ThemedView>
@@ -194,27 +188,27 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 10,
   },
-  gradientHeader: {
+  headerDark: {
     paddingTop: 40,
     paddingBottom: 30,
     alignItems: 'center',
     justifyContent: 'center',
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
-    shadowColor: '#2196F3',
+    backgroundColor: '#23272f',
+    marginBottom: 10,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
     elevation: 10,
-    marginBottom: 10,
-    position: 'relative',
   },
-  headerTitle: {
+  headerTitleDark: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#222',
+    color: '#fff',
     marginBottom: 10,
-    textShadowColor: '#6DD5FA',
+    textShadowColor: '#181A20',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 6,
   },
@@ -243,13 +237,13 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 30,
   },
-  medicationCard: {
-    backgroundColor: '#fff',
+  medicationCardDark: {
+    backgroundColor: '#23272f',
     marginHorizontal: 16,
     marginVertical: 10,
     padding: 18,
     borderRadius: 18,
-    shadowColor: '#2196F3',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
@@ -260,11 +254,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
-  medicationName: {
+  medicationNameDark: {
     fontSize: 18,
     fontWeight: 'bold',
     marginLeft: 10,
     flex: 1,
+    color: '#fff',
   },
   deleteButton: {
     padding: 5,
@@ -288,7 +283,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginVertical: 5,
   },
-  emptyStateSubtext: {
+  emptyStateSubtextDark: {
     fontSize: 14,
     color: '#888',
     textAlign: 'center',
