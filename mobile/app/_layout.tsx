@@ -20,6 +20,10 @@ export default function RootLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
+  const flatSegments = segments.flat();
+  const isLoginScreen = flatSegments.includes('login');
+  const isRegistroScreen = flatSegments.includes('registrousuario');
+
   useEffect(() => {
     checkAuth();
   }, []);
@@ -27,10 +31,6 @@ export default function RootLayout() {
   const checkAuth = async () => {
     try {
       const usuarioId = await AsyncStorage.getItem('usuarioId');
-      const flatSegments = segments.flat();
-      const isLoginScreen = flatSegments.includes('login');
-      const isRegistroScreen = flatSegments.includes('registrousuario');
-
       if (!usuarioId && !isLoginScreen && !isRegistroScreen) {
         router.replace('/login');
       } else if (usuarioId && (isLoginScreen || isRegistroScreen)) {
@@ -58,7 +58,8 @@ export default function RootLayout() {
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />
-        <GlobalPanicButton />
+        {/* Solo muestra el botón si NO es login ni registro */}
+        {!(isLoginScreen || isRegistroScreen) && <GlobalPanicButton />}
         {showWelcome && <WelcomeMessage />}
       </View>
     </ThemeProvider>

@@ -79,7 +79,7 @@ export default function AddMedicationScreen() {
           },
           trigger: {
             channelId: 'medicamentos',
-            hour: 8, // Puedes ajustar según la hora seleccionada
+            hour: 8,
             minute: 0,
             repeats: true,
           },
@@ -102,7 +102,7 @@ export default function AddMedicationScreen() {
         shouldShowList: true,
       }),
     });
-    // Crear canal de notificaciones en Android
+   
     Notifications.getPermissionsAsync();
     if (Platform.OS === 'android') {
       Notifications.setNotificationChannelAsync('medicamentos', {
@@ -115,7 +115,7 @@ export default function AddMedicationScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#181A20' }}>
-      {/* Header con botón de volver alineado al título */}
+      {}
       <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 70, marginBottom: 10, justifyContent: 'center' }}>
         <TouchableOpacity
           onPress={() => router.back()}
@@ -139,7 +139,9 @@ export default function AddMedicationScreen() {
               style={styles.input}
               value={medication.name}
               onChangeText={(text) => {
-                if (text.length <= 30) setMedication({ ...medication, name: text });
+             
+                const clean = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+                if (clean.length <= 30) setMedication({ ...medication, name: clean });
               }}
               placeholder="Ej: Paracetamol"
               placeholderTextColor="#aaa"
@@ -153,9 +155,11 @@ export default function AddMedicationScreen() {
               style={styles.input}
               value={medication.dosage}
               onChangeText={(text) => {
-                if (text.length <= 15) setMedication({ ...medication, dosage: text });
+             
+                const clean = text.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+                if (clean.length <= 15) setMedication({ ...medication, dosage: clean });
               }}
-              placeholder="Ej: 500mg"
+              placeholder="Ej: 2 comprimidos de 500mg"
               placeholderTextColor="#aaa"
               maxLength={15}
             />
@@ -168,7 +172,7 @@ export default function AddMedicationScreen() {
                 style={[styles.input, { width: 60, marginRight: 8, marginLeft: 4, textAlign: 'center' }]}
                 value={medication.frequency}
                 onChangeText={text => {
-                  // Solo permitir números, máximo 2 dígitos, entre 1 y 24
+
                   let numeric = text.replace(/\D/g, '').slice(0, 2);
                   if (numeric) {
                     let num = parseInt(numeric, 10);
@@ -215,7 +219,9 @@ export default function AddMedicationScreen() {
               style={[styles.input, styles.notesInput]}
               value={medication.notes}
               onChangeText={(text) => {
-                if (text.length <= 100) setMedication({ ...medication, notes: text });
+                // Letras, números y espacios
+                const clean = text.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+                if (clean.length <= 100) setMedication({ ...medication, notes: clean });
               }}
               placeholder="Ej: Tomar después de las comidas"
               placeholderTextColor="#aaa"
@@ -299,7 +305,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   optionBtn: {
-    backgroundColor: '#eee',
+    backgroundColor: '#64b5f6', // Azul claro
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 16,

@@ -79,6 +79,12 @@ export default function VirtualAssistant() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.disclaimerContainer}>
+        <Text style={styles.disclaimerText}>
+          La información proporcionada por esta IA es orientativa y podría no ser completamente precisa o actualizada. No debe considerarse una fuente totalmente confiable ni reemplaza el asesoramiento profesional.
+        </Text>
+      </View>
+
       <ScrollView style={styles.messagesContainer}>
         {messages.map((message, index) => (
           <View
@@ -111,7 +117,7 @@ export default function VirtualAssistant() {
 
       <View style={styles.inputContainer}>
         <TouchableOpacity style={styles.imageButton} onPress={handlePickImage}>
-          <Ionicons name="image" size={24} color="#2196F3" />
+          <Ionicons name="add" size={24} color="#2196F3" />
         </TouchableOpacity>
         <TextInput
           style={styles.input}
@@ -135,22 +141,34 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     marginTop: 0,
   },
+  disclaimerContainer: {
+    backgroundColor: '#23272f',
+    borderRadius: 10,
+    padding: 10,
+    margin: 12,
+    marginBottom: 0,
+  },
+  disclaimerText: {
+    color: '#FFD93D',
+    fontSize: 13,
+    textAlign: 'center',
+  },
   messagesContainer: {
     flex: 1,
     padding: 10,
   },
   messageBubble: {
-    padding: 10,
-    borderRadius: 10,
-    marginVertical: 5,
+    padding: 12,
+    borderRadius: 16,
+    marginVertical: 6,
     maxWidth: '80%',
   },
   userMessage: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#1976D2', // Azul no muy oscuro
     alignSelf: 'flex-end',
   },
   assistantMessage: {
-    backgroundColor: '#23272f',
+    backgroundColor: '#23272f', // Gris oscuro
     alignSelf: 'flex-start',
   },
   messageText: {
@@ -159,25 +177,27 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: 'row',
+    alignItems: 'center',
     padding: 10,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#ddd',
+    backgroundColor: '#181A20',
+    borderTopWidth: 0,
   },
   input: {
     flex: 1,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 20,
-    paddingHorizontal: 15,
-    paddingVertical: 8,
+    backgroundColor: '#23272f',
+    borderRadius: 24,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
     marginRight: 10,
     fontSize: 16,
+    color: '#fff',
+    borderWidth: 0,
   },
   sendButton: {
-    backgroundColor: '#007AFF',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    backgroundColor: '#1976D2',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
   },

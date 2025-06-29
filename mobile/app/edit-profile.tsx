@@ -23,6 +23,7 @@ export default function EditProfileScreen() {
     { name: '', phone: '', relation: '' },
     { name: '', phone: '', relation: '' }
   ]);
+  const [age, setAge] = useState(''); // Nuevo estado para la edad
 
   useEffect(() => {
     loadUserData();
@@ -41,6 +42,7 @@ export default function EditProfileScreen() {
           address: data.zonaDireccion || '',
           medicalNotes: data.notasGenerales || '',
         });
+        setAge(data.edad ? String(data.edad) : ''); // Cargar edad si viene del backend
       }
 
       // Info médica
@@ -103,6 +105,7 @@ export default function EditProfileScreen() {
         body: JSON.stringify({
           zonaDireccion: emergencyData.address,
           notasGenerales: emergencyData.medicalNotes,
+          edad: age, // Guardar edad
         }),
       });
 
@@ -146,9 +149,45 @@ export default function EditProfileScreen() {
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
       >
-        <ThemedText type="title" style={[styles.headerTitle, { color: '#fff' }]}>
-          Editar Perfil
-        </ThemedText>
+        {/* FOTO Y NOMBRE */}
+        <View style={{ alignItems: 'center', marginTop: 10 }}>
+          {/* Aquí iría el avatar/foto */}
+          {/* <Image ... /> */}
+          <ThemedText
+            style={{
+              color: '#2196F3',
+              textDecorationLine: 'underline',
+              marginTop: 8,
+              marginBottom: 2,
+              fontSize: 15,
+            }}
+          >
+            Editar foto
+          </ThemedText>
+          <ThemedText
+            style={{
+              color: '#fff',
+              fontWeight: 'bold',
+              fontSize: 28,
+              marginTop: 6,
+              textShadowColor: '#000',
+              textShadowOffset: { width: 0, height: 2 },
+              textShadowRadius: 6,
+            }}
+          >
+            Usuario
+          </ThemedText>
+          <ThemedText
+            style={{
+              color: '#ccc',
+              fontSize: 16,
+              marginTop: 2,
+              marginBottom: 8,
+            }}
+          >
+            {age ? `Edad: ${age}` : 'Edad no especificada'}
+          </ThemedText>
+        </View>
       </LinearGradient>
 
       {/* Información de emergencia */}
@@ -158,15 +197,38 @@ export default function EditProfileScreen() {
         <TextInput
           style={styles.input}
           value={emergencyData.address}
-          onChangeText={text => handleEmergencyChange('address', text)}
+          onChangeText={text => {
+            const clean = text.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+            handleEmergencyChange('address', clean);
+          }}
           placeholder="Dirección o zona de residencia"
+          placeholderTextColor="#888"
         />
         <ThemedText style={styles.label}>Notas generales</ThemedText>
         <TextInput
           style={styles.input}
           value={emergencyData.medicalNotes}
-          onChangeText={text => handleEmergencyChange('medicalNotes', text)}
+          onChangeText={text => {
+            const clean = text.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+            handleEmergencyChange('medicalNotes', clean);
+          }}
           placeholder="Notas relevantes para emergencias"
+          placeholderTextColor="#888"
+        />
+
+        {/* CAMPO DE EDAD */}
+        <ThemedText style={styles.label}>Edad</ThemedText>
+        <TextInput
+          style={styles.input}
+          value={age}
+          onChangeText={text => {
+            const clean = text.replace(/[^0-9]/g, '');
+            setAge(clean);
+          }}
+          placeholder="Edad"
+          keyboardType="numeric"
+          maxLength={3}
+          placeholderTextColor="#888"
         />
 
         {/* Información médica */}
@@ -175,53 +237,85 @@ export default function EditProfileScreen() {
         <TextInput
           style={styles.input}
           value={medicalData.bloodType}
-          onChangeText={text => handleMedicalChange('bloodType', text)}
+          onChangeText={text => {
+            const clean = text.replace(/[^a-zA-Z+\-*/]/g, '').slice(0, 5);
+            handleMedicalChange('bloodType', clean);
+          }}
           placeholder="Ej: O+, A-, etc."
+          maxLength={5}
+          placeholderTextColor="#888"
         />
         <ThemedText style={styles.label}>Alergias</ThemedText>
         <TextInput
           style={styles.input}
           value={medicalData.allergies}
-          onChangeText={text => handleMedicalChange('allergies', text)}
+          onChangeText={text => {
+            const clean = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+            handleMedicalChange('allergies', clean);
+          }}
           placeholder="Alergias importantes"
+          placeholderTextColor="#888"
         />
         <ThemedText style={styles.label}>Enfermedades crónicas</ThemedText>
         <TextInput
           style={styles.input}
           value={medicalData.chronicDiseases}
-          onChangeText={text => handleMedicalChange('chronicDiseases', text)}
+          onChangeText={text => {
+            const clean = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+            handleMedicalChange('chronicDiseases', clean);
+          }}
           placeholder="Ej: Diabetes, hipertensión, etc."
+          placeholderTextColor="#888"
         />
         <ThemedText style={styles.label}>Medicamento importante</ThemedText>
         <TextInput
           style={styles.input}
           value={medicalData.importantMedication}
-          onChangeText={text => handleMedicalChange('importantMedication', text)}
+          onChangeText={text => {
+            const clean = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+            handleMedicalChange('importantMedication', clean);
+          }}
           placeholder="Nombre del medicamento"
+          placeholderTextColor="#888"
         />
 
         {/* Contactos de emergencia */}
         <ThemedText style={styles.sectionTitle}>Contactos de Emergencia</ThemedText>
         {emergencyContacts.map((contact, idx) => (
           <View key={idx} style={styles.contactCard}>
+            {/* NOMBRE: solo letras y tildes */}
             <TextInput
               style={styles.input}
               value={contact.name}
-              onChangeText={text => handleContactChange(idx, 'name', text)}
+              onChangeText={text => {
+                const clean = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+                handleContactChange(idx, 'name', clean);
+              }}
               placeholder="Nombre"
+              placeholderTextColor="#888"
             />
+            {/* TELÉFONO: solo números */}
             <TextInput
               style={styles.input}
               value={contact.phone}
-              onChangeText={text => handleContactChange(idx, 'phone', text)}
+              onChangeText={text => {
+                const clean = text.replace(/[^0-9]/g, '');
+                handleContactChange(idx, 'phone', clean);
+              }}
               placeholder="Teléfono"
               keyboardType="phone-pad"
+              placeholderTextColor="#888"
             />
+            {/* RELACIÓN: solo letras */}
             <TextInput
               style={styles.input}
               value={contact.relation}
-              onChangeText={text => handleContactChange(idx, 'relation', text)}
+              onChangeText={text => {
+                const clean = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+                handleContactChange(idx, 'relation', clean);
+              }}
               placeholder="Relación (hijo, vecino, etc.)"
+              placeholderTextColor="#888"
             />
           </View>
         ))}

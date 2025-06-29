@@ -104,11 +104,24 @@ export default function RegistroUsuario() {
             borderRadius: 20,
           }}
         >
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: 16,
+            }}
+          >
+            <Text style={{ color: "#2196F3", fontWeight: "bold", fontSize: 16 }}>
+              {"← Volver"}
+            </Text>
+          </TouchableOpacity>
+
           <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 20, marginBottom: 4 }}>
-            Registro Admin
+            Registro
           </Text>
           <Text style={{ color: "#bcbcbc", marginBottom: 18 }}>
-            Completa los datos para registrarse como administrador
+            Completa los datos para registrarse
           </Text>
 
           <Text style={{ color: "#fff", fontWeight: "bold", marginBottom: 4 }}>

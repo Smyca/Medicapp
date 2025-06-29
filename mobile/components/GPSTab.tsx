@@ -603,13 +603,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: '#181A20', // Fondo oscuro
     zIndex: 1,
   },
   assistantText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#007AFF',
+    color: '#64b5f6', // Azul claro
   },
   muteButton: {
     padding: 6,
@@ -628,12 +628,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
     padding: 10,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#23272f', // Fondo oscuro
     borderRadius: 8,
   },
   locationText: {
     fontSize: 16,
     marginVertical: 2,
+    color: '#fff', // Texto blanco
   },
   errorText: {
     color: 'red',
@@ -653,7 +654,7 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   placeItem: {
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#23272f', // Fondo oscuro
     padding: 15,
     borderRadius: 10,
     marginVertical: 6,
@@ -673,15 +674,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     flex: 1,
+    color: '#fff', // Texto blanco
   },
   placeDistance: {
     fontSize: 14,
-    color: '#007AFF',
+    color: '#64b5f6', // Azul claro
     marginLeft: 8,
   },
   placeDescription: {
     fontSize: 14,
-    color: '#666',
+    color: '#A9A9A9', // Gris claro
     marginBottom: 8,
   },
   ratingContainer: {
@@ -692,7 +694,7 @@ const styles = StyleSheet.create({
   ratingText: {
     marginLeft: 4,
     fontSize: 14,
-    color: '#666',
+    color: '#A9A9A9', // Gris claro
   },
   optionsRow: {
     flexDirection: 'row',
@@ -708,13 +710,13 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 12,
-    color: '#007AFF',
+    color: '#64b5f6', // Azul claro
     marginTop: 4,
   },
   apiWarningContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF3E0',
+    backgroundColor: '#23272f', // Fondo oscuro
     padding: 10,
     borderRadius: 8,
     marginBottom: 10,
@@ -725,4 +727,4 @@ const styles = StyleSheet.create({
     color: '#FFA500',
     fontSize: 14,
   },
-}); 
+});

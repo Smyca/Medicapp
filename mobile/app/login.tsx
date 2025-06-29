@@ -3,29 +3,48 @@ import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, Link } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, TextInput, TouchableOpacity, View, Text, Platform } from 'react-native';
 import { API_URL } from '@env';
 
 console.log('API_URL:', API_URL);
 
+
+// Componente de alerta visual
+function AppAlert({ message, onClose }: { message: string, onClose: () => void }) {
+  if (!message) return null;
+  return (
+    <View style={styles.appAlertContainer}>
+      <IconSymbol name="exclamationmark.triangle.fill" size={20} color="#FF6B6B" style={{ marginRight: 8 }} />
+      <Text style={styles.appAlertText}>{message}</Text>
+      <TouchableOpacity onPress={onClose} style={{ marginLeft: 8 }}>
+        <IconSymbol name="xmark.circle.fill" size={20} color="#FF6B6B" />
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 function showAlert(title: string, message: string) {
-  if (Platform.OS === 'web') {
-    window.alert(`${title}\n${message}`);
-  } else {
-    Alert.alert(title, message);
-  }
+  setAlertMsg(`${title}: ${message}`);
 }
 
 // Guardar usuario localmente
-async function setUserData(email: string, password: string) {
+function setUserData(email: string, password: string) {
   const user = { email, password };
-  await AsyncStorage.setItem('localUser', JSON.stringify(user));
+  if (Platform.OS === 'web') {
+    localStorage.setItem('localUser', JSON.stringify(user));
+  } else {
+    AsyncStorage.setItem('localUser', JSON.stringify(user));
+  }
 }
 
-// Validar usuario local
 async function checkLocalUser(email: string, password: string) {
-  const userStr = await AsyncStorage.getItem('localUser');
+  let userStr: string | null = null;
+  if (Platform.OS === 'web') {
+    userStr = localStorage.getItem('localUser');
+  } else {
+    userStr = await AsyncStorage.getItem('localUser');
+  }
   if (!userStr) return false;
   const user = JSON.parse(userStr);
   return user.email === email && user.password === password;
@@ -34,11 +53,12 @@ async function checkLocalUser(email: string, password: string) {
 export default function RegistroUsuario() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [alertMsg, setAlertMsg] = useState('');
 
   // Crear usuario local por defecto al montar el componente
-  useState(() => {
+  useEffect(() => {
     setUserData('1234', 'pass');
-  });
+  }, []);
 
   const handleLogin = async () => {
     try {
@@ -87,6 +107,8 @@ export default function RegistroUsuario() {
       </View>
 
       <ThemedView style={styles.formContainer}>
+        {/* ALERTA DENTRO DEL CARD */}
+        <AppAlert message={alertMsg} onClose={() => setAlertMsg('')} />
         <View style={styles.inputContainer}>
           <IconSymbol size={24} name="envelope.fill" color="#666" style={styles.inputIcon} />
           <TextInput
@@ -139,7 +161,7 @@ export default function RegistroUsuario() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#181A20',
     padding: 20,
   },
   logoContainer: {
@@ -155,16 +177,16 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 18,
-    color: '#666',
+    color: '#A9A9A9',
     marginTop: 10,
   },
   formContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: '#23272f',
     borderRadius: 15,
     padding: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 3,
   },
@@ -172,10 +194,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#444',
     borderRadius: 10,
     marginBottom: 15,
-    backgroundColor: '#fff',
+    backgroundColor: '#181A20',
   },
   inputIcon: {
     padding: 10,
@@ -185,6 +207,8 @@ const styles = StyleSheet.create({
     height: 50,
     fontSize: 16,
     paddingHorizontal: 10,
+    color: '#fff',
+    backgroundColor: '#181A20',
   },
   loginButton: {
     flexDirection: 'row',
@@ -218,10 +242,32 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 16,
-    color: '#666',
+    color: '#A9A9A9',
   },
   registerText: {
     color: '#2196F3',
+    fontWeight: 'bold',
+  },
+  appAlertContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#23272f',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#FF6B6B',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  appAlertText: {
+    color: '#FF6B6B',
+    fontSize: 15,
+    flex: 1,
+    textAlign: 'left',
     fontWeight: 'bold',
   },
 });
