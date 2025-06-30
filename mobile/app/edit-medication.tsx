@@ -7,6 +7,11 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Platform, ScrollView, StyleSheet, Switch, TextInput, TouchableOpacity, View } from 'react-native';
 import { API_URL } from '@env';
+
+const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) =>
+  `${i.toString().padStart(2, '0')}:00`
+);
+
 export default function EditMedicationScreen() {
   const { id } = useLocalSearchParams();
   const [medication, setMedication] = useState({
@@ -17,17 +22,6 @@ export default function EditMedicationScreen() {
     notes: '',
   });
   const [reminder, setReminder] = useState(false);
-
-  const FREQUENCY_OPTIONS = [
-    'Cada 8 horas',
-    'Cada 12 horas',
-    'Cada 24 horas',
-  ];
-  const HOUR_OPTIONS = [
-    "06:00", "07:00", "08:00", "09:00", "10:00", "11:00",
-    "12:00", "13:00", "14:00", "15:00", "16:00", "17:00",
-    "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"
-  ];
 
   useEffect(() => {
     if (id) {
@@ -54,19 +48,17 @@ export default function EditMedicationScreen() {
 
   const loadMedication = async () => {
     try {
-      
-      // Cargar medicamento desde el backend usando el id
       const res = await fetch(`${API_URL}/medicamentos/${id}`);
       if (res.ok) {
         const med = await res.json();
         setMedication({
-            name:    med.nombre                || '',
-            dosage:  med.dosis                 || '',
-            frequency: med.frecuenciaPersonalizada || '',
-            time:     med.horaPersonalizada      || '',
-            notes:    med.notasAdicionales       || '',
-          });
-
+          name: med.nombre || '',
+          dosage: med.dosis || '',
+          frequency: med.frecuenciaPersonalizada || '',
+          time: med.horaPersonalizada || '',
+          notes: med.notasAdicionales || '',
+        });
+        setReminder(!!med.recordatorioActivo);
       } else {
         Alert.alert('Error', 'No se pudo cargar el medicamento');
       }
@@ -123,7 +115,6 @@ export default function EditMedicationScreen() {
         Alert.alert('Error', 'No se pudo actualizar el medicamento');
         return;
       }
-      // Opcional: manejar recordatorio aquí si lo necesitas
       if (reminder) {
         await Notifications.requestPermissionsAsync();
         await Notifications.scheduleNotificationAsync({
@@ -134,7 +125,7 @@ export default function EditMedicationScreen() {
           },
           trigger: {
             channelId: 'medicamentos',
-            hour: 8, // Puedes ajustar según la hora seleccionada
+            hour: 8,
             minute: 0,
             repeats: true,
           },
@@ -148,227 +139,195 @@ export default function EditMedicationScreen() {
   };
 
   const handleDelete = async () => {
-    if (Platform.OS === 'web') {
-      const confirmed = window.confirm('¿Estás seguro de que deseas eliminar este medicamento?');
-      if (!confirmed) return;
-      try {
-        const res = await fetch(`${API_URL}/medicamentos/${id}`, {
-          method: 'DELETE',
-        });
-        if (!res.ok) {
-          window.alert('No se pudo eliminar el medicamento');
-          return;
-        }
-        router.back();
-      } catch (error) {
-        window.alert('Ocurrió un error al eliminar el medicamento');
-      }
-    } else {
-      Alert.alert(
-        'Eliminar Medicamento',
-        '¿Estás seguro de que deseas eliminar este medicamento?',
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          {
-            text: 'Eliminar',
-            style: 'destructive',
-            onPress: async () => {
-              try {
-                const res = await fetch(`${API_URL}/medicamentos/${id}`, {
-                  method: 'DELETE',
-                });
-                if (!res.ok) {
-                  Alert.alert('Error', 'No se pudo eliminar el medicamento');
-                  return;
-                }
-                router.back();
-              } catch (error) {
-                Alert.alert('Error', 'Ocurrió un error al eliminar el medicamento');
+    Alert.alert(
+      'Eliminar Medicamento',
+      '¿Estás seguro de que deseas eliminar este medicamento?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const res = await fetch(`${API_URL}/medicamentos/${id}`, {
+                method: 'DELETE',
+              });
+              if (!res.ok) {
+                Alert.alert('Error', 'No se pudo eliminar el medicamento');
+                return;
               }
-            },
+              router.back();
+            } catch (error) {
+              Alert.alert('Error', 'Ocurrió un error al eliminar el medicamento');
+            }
           },
-        ]
-      );
-    }
+        },
+      ]
+    );
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <IconSymbol size={24} name="chevron.left" color="#2196F3" />
+    <View style={{ flex: 1, backgroundColor: '#181A20' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 70, marginBottom: 10, justifyContent: 'center' }}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.squareBackBtn}
+          accessibilityLabel="Volver"
+        >
+          <ThemedText style={{ color: '#fff', fontSize: 28, fontWeight: 'bold', marginTop: -2 }}>&lt;</ThemedText>
         </TouchableOpacity>
-        <ThemedText type="title">Editar Medicamento</ThemedText>
-      </ThemedView>
-
-      <ThemedView style={styles.form}>
-        <View style={styles.inputGroup}>
-          <ThemedText style={styles.label}>Nombre del Medicamento *</ThemedText>
-          <TextInput
-            style={styles.input}
-            value={medication.name}
-            onChangeText={(text) => {
-              if (text.length <= 30) setMedication({ ...medication, name: text });
-            }}
-            placeholder="Ej: Paracetamol"
-            maxLength={30}
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <ThemedText style={styles.label}>Dosis *</ThemedText>
-          <TextInput
-            style={styles.input}
-            value={medication.dosage}
-            onChangeText={(text) => {
-              if (text.length <= 15) setMedication({ ...medication, dosage: text });
-            }}
-            placeholder="Ej: 500mg"
-            maxLength={15}
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <ThemedText style={styles.label}>Frecuencia *</ThemedText>
-          <View style={styles.optionsRow}>
-            {FREQUENCY_OPTIONS.map(opt => (
-              <TouchableOpacity
-                key={opt}
-                style={[styles.optionBtn, medication.frequency === opt && styles.optionBtnSelected]}
-                onPress={() => setMedication({ ...medication, frequency: opt })}
-              >
-                <ThemedText style={[styles.optionBtnText, medication.frequency === opt && styles.optionBtnTextSelected]}>{opt}</ThemedText>
-              </TouchableOpacity>
-            ))}
+        <ThemedText
+          type="title"
+          style={[styles.title, { textAlign: 'left', marginLeft: 12 }]}
+        >
+          Editar Medicamento
+        </ThemedText>
+      </View>
+      <ScrollView contentContainerStyle={{ paddingTop: 10, paddingBottom: 30 }}>
+        <ThemedView style={styles.form}>
+          <View style={styles.inputGroup}>
+            <ThemedText style={styles.label}>Nombre del Medicamento *</ThemedText>
+            <TextInput
+              style={styles.input}
+              value={medication.name}
+              onChangeText={(text) => {
+                const clean = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+                if (clean.length <= 30) setMedication({ ...medication, name: clean });
+              }}
+              placeholder="Ej: Paracetamol"
+              placeholderTextColor="#aaa"
+              autoFocus
+              maxLength={30}
+            />
           </View>
-          <TextInput
-            style={styles.input}
-            value={medication.frequency}
-            onChangeText={(text) => {
-              if (text.length <= 25) setMedication({ ...medication, frequency: text });
-            }}
-            placeholder="Ej: Cada 8 horas"
-            maxLength={25}
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <ThemedText style={styles.label}>Hora *</ThemedText>
-          <View style={styles.optionsRow}>
-            {HOUR_OPTIONS.map(opt => (
-              <TouchableOpacity
-                key={opt}
-                style={[styles.optionBtn, medication.time === opt && styles.optionBtnSelected]}
-                onPress={() => setMedication({ ...medication, time: opt })}
-              >
-                <ThemedText style={[styles.optionBtnText, medication.time === opt && styles.optionBtnTextSelected]}>{opt}</ThemedText>
-              </TouchableOpacity>
-            ))}
+          <View style={styles.inputGroup}>
+            <ThemedText style={styles.label}>Dosis *</ThemedText>
+            <TextInput
+              style={styles.input}
+              value={medication.dosage}
+              onChangeText={(text) => {
+                const clean = text.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+                if (clean.length <= 15) setMedication({ ...medication, dosage: clean });
+              }}
+              placeholder="Ej: 2 comprimidos de 500mg"
+              placeholderTextColor="#aaa"
+              maxLength={15}
+            />
           </View>
-        </View>
-
-        <View style={styles.inputGroup}>
-          <ThemedText style={styles.label}>¿Activar recordatorio?</ThemedText>
-          <Switch
-            value={reminder}
-            onValueChange={setReminder}
-            thumbColor={reminder ? '#1976D2' : '#ccc'}
-            trackColor={{ false: '#bbb', true: '#90caf9' }}
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <ThemedText style={styles.label}>Notas Adicionales</ThemedText>
-          <TextInput
-            style={[styles.input, styles.notesInput]}
-            value={medication.notes}
-            onChangeText={(text) => {
-              if (text.length <= 100) setMedication({ ...medication, notes: text });
-            }}
-            placeholder="Ej: Tomar después de las comidas"
-            multiline
-            numberOfLines={4}
-            maxLength={100}
-          />
-        </View>
-
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <IconSymbol size={28} name="checkmark.circle.fill" color="#FFFFFF" />
-          <ThemedText style={styles.saveButtonText}>Guardar Cambios</ThemedText>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-          <IconSymbol size={28} name="trash.fill" color="#fff" />
-          <ThemedText style={styles.deleteButtonText}>Eliminar Medicamento</ThemedText>
-        </TouchableOpacity>
-      </ThemedView>
-    </ScrollView>
+          <View style={styles.inputGroup}>
+            <ThemedText style={styles.label}>Frecuencia *</ThemedText>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <ThemedText style={{ fontSize: 18, color: '#A9A9A9' }}>Cada </ThemedText>
+              <TextInput
+                style={[styles.input, { width: 60, marginRight: 8, marginLeft: 4, textAlign: 'center' }]}
+                value={medication.frequency}
+                onChangeText={text => {
+                  let numeric = text.replace(/\D/g, '').slice(0, 2);
+                  if (numeric) {
+                    let num = parseInt(numeric, 10);
+                    if (num < 1) numeric = '1';
+                    else if (num > 24) numeric = '24';
+                    else numeric = num.toString();
+                  }
+                  setMedication({ ...medication, frequency: numeric });
+                }}
+                placeholder="8"
+                placeholderTextColor="#aaa"
+                keyboardType="numeric"
+                maxLength={2}
+              />
+              <ThemedText style={{ fontSize: 18, color: '#A9A9A9' }}>horas</ThemedText>
+            </View>
+          </View>
+          <View style={styles.inputGroup}>
+            <ThemedText style={styles.label}>Hora *</ThemedText>
+            <View style={styles.optionsRow}>
+              {HOUR_OPTIONS.map(opt => (
+                <TouchableOpacity
+                  key={opt}
+                  style={[styles.optionBtn, medication.time === opt && styles.optionBtnSelected]}
+                  onPress={() => setMedication({ ...medication, time: opt })}
+                >
+                  <ThemedText style={[styles.optionBtnText, medication.time === opt && styles.optionBtnTextSelected]}>{opt}</ThemedText>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+          <View style={styles.inputGroup}>
+            <ThemedText style={styles.label}>¿Activar recordatorio?</ThemedText>
+            <Switch
+              value={reminder}
+              onValueChange={setReminder}
+              thumbColor={reminder ? '#1976D2' : '#ccc'}
+              trackColor={{ false: '#bbb', true: '#90caf9' }}
+            />
+          </View>
+          <View style={styles.inputGroup}>
+            <ThemedText style={styles.label}>Notas Adicionales</ThemedText>
+            <TextInput
+              style={[styles.input, styles.notesInput]}
+              value={medication.notes}
+              onChangeText={(text) => {
+                const clean = text.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+                if (clean.length <= 100) setMedication({ ...medication, notes: clean });
+              }}
+              placeholder="Ej: Tomar después de las comidas"
+              placeholderTextColor="#aaa"
+              multiline
+              numberOfLines={4}
+              maxLength={100}
+            />
+          </View>
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave} accessibilityLabel="Guardar Cambios">
+            <IconSymbol size={28} name="checkmark.circle.fill" color="#FFFFFF" />
+            <ThemedText style={styles.saveButtonText}>Guardar Cambios</ThemedText>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+            <IconSymbol size={28} name="trash.fill" color="#fff" />
+            <ThemedText style={styles.deleteButtonText}>Eliminar Medicamento</ThemedText>
+          </TouchableOpacity>
+        </ThemedView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  backButton: {
-    marginRight: 15,
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 18,
+    marginTop: 10,
+    color: '#fff',
   },
   form: {
     padding: 20,
+    backgroundColor: '#181A20',
+    borderRadius: 0,
   },
   inputGroup: {
-    marginBottom: 20,
+    marginBottom: 22,
   },
   label: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 10,
+    color: '#A9A9A9',
   },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: '#23272f',
     borderWidth: 1,
-    borderColor: '#bbb',
+    borderColor: '#444',
     borderRadius: 10,
     padding: 16,
     fontSize: 20,
     marginTop: 4,
+    color: '#fff',
   },
   notesInput: {
     height: 100,
     textAlignVertical: 'top',
-  },
-  optionsRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 8,
-    flexWrap: 'wrap',
-  },
-  optionBtn: {
-    backgroundColor: '#eee',
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    marginRight: 6,
-    marginBottom: 6,
-  },
-  optionBtnSelected: {
-    backgroundColor: '#2196F3',
-  },
-  optionBtnText: {
-    fontSize: 18,
-    color: '#222',
-  },
-  optionBtnTextSelected: {
-    color: '#fff',
-    fontWeight: 'bold',
   },
   saveButton: {
     flexDirection: 'row',
@@ -411,5 +370,39 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 12,
     letterSpacing: 1,
+  },
+  optionsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 8,
+    flexWrap: 'wrap',
+  },
+  optionBtn: {
+    backgroundColor: '#64b5f6',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginRight: 6,
+    marginBottom: 6,
+  },
+  optionBtnSelected: {
+    backgroundColor: '#2196F3',
+  },
+  optionBtnText: {
+    fontSize: 18,
+    color: '#222',
+  },
+  optionBtnTextSelected: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  squareBackBtn: {
+    width: 40,
+    height: 40,
+    backgroundColor: '#222',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
   },
 });

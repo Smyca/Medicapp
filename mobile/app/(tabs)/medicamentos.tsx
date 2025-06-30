@@ -68,11 +68,17 @@ export default function MedicationsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              const updatedMedications = medications.filter(med => med.id !== id);
-              await AsyncStorage.setItem('medications', JSON.stringify(updatedMedications));
-              setMedications(updatedMedications);
+              const res = await fetch(`${API_URL}/medicamentos/${id}`, {
+                method: 'DELETE',
+              });
+              if (!res.ok) {
+                Alert.alert('Error', 'No se pudo eliminar el medicamento');
+                return;
+              }
+              setMedications(medications.filter(med => med.id !== id));
             } catch (error) {
               console.error('Error deleting medication:', error);
+              Alert.alert('Error', 'Ocurrió un error al eliminar el medicamento');
             }
           },
         },
@@ -81,7 +87,8 @@ export default function MedicationsScreen() {
   };
 
   return (
-    <ThemedView style={{ flex: 1, backgroundColor: '#181A20', paddingTop: 0 }}>
+    <ThemedView style={{ flex: 1, backgroundColor: '#181A20' }}>
+      <View style={{ height: 60 }} /> {/* Espacio arriba del header */}
       <View style={styles.headerDark}>
         <ThemedText type="title" style={styles.headerTitleDark}>Mis Medicamentos</ThemedText>
         <TouchableOpacity 
@@ -123,7 +130,7 @@ export default function MedicationsScreen() {
                 </View>
                 <View style={styles.detailRow}>
                   <IconSymbol size={20} name="clock.fill" color="#FFD93D" />
-                  <ThemedText style={styles.detailTextDark}>Frecuencia: {medication.frequency}</ThemedText>
+                  <ThemedText style={styles.detailTextDark}>Frecuencia: cada {medication.frequency} {medication.frequency === '1' ? 'hora' : 'horas'}</ThemedText>
                 </View>
                 <View style={styles.detailRow}>
                   <IconSymbol size={20} name="alarm.fill" color="#FF6B6B" />

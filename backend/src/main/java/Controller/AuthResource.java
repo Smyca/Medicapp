@@ -6,17 +6,20 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @Path("/auth")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class AuthResource {
-
+    
+    @RegisterForReflection
     public static class LoginRequest {
         public String username;
         public String password;
     }
 
+    @RegisterForReflection
     public static class LoginResponse {
         public boolean success;
         public String message;

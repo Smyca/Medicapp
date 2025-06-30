@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, KeyboardAvoidingView, Platform } from 'react-native';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
@@ -78,59 +78,65 @@ export default function VirtualAssistant() {
   const handleRemoveImage = () => setImage(null);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.disclaimerContainer}>
-        <Text style={styles.disclaimerText}>
-          La información proporcionada por esta IA es orientativa y podría no ser completamente precisa o actualizada. No debe considerarse una fuente totalmente confiable ni reemplaza el asesoramiento profesional.
-        </Text>
-      </View>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={0} // Ajusta si tienes header fijo, por ejemplo 80
+    >
+      <View style={styles.container}>
+        <View style={styles.disclaimerContainer}>
+          <Text style={styles.disclaimerText}>
+            La información proporcionada por esta IA es orientativa y podría no ser completamente precisa o actualizada. No debe considerarse una fuente totalmente confiable ni reemplaza el asesoramiento profesional.
+          </Text>
+        </View>
 
-      <ScrollView style={styles.messagesContainer}>
-        {messages.map((message, index) => (
-          <View
-            key={index}
-            style={[
-              styles.messageBubble,
-              message.isUser ? styles.userMessage : styles.assistantMessage,
-            ]}
-          >
-            {message.image && (
-              <Image
-                source={{ uri: message.image }}
-                style={{ width: 120, height: 120, borderRadius: 10, marginBottom: 6 }}
-              />
-            )}
-            <Text style={styles.messageText}>{message.text}</Text>
+        <ScrollView style={styles.messagesContainer}>
+          {messages.map((message, index) => (
+            <View
+              key={index}
+              style={[
+                styles.messageBubble,
+                message.isUser ? styles.userMessage : styles.assistantMessage,
+              ]}
+            >
+              {message.image && (
+                <Image
+                  source={{ uri: message.image }}
+                  style={{ width: 120, height: 120, borderRadius: 10, marginBottom: 6 }}
+                />
+              )}
+              <Text style={styles.messageText}>{message.text}</Text>
+            </View>
+          ))}
+        </ScrollView>
+
+        {/* Vista previa de imagen antes de enviar */}
+        {image && (
+          <View style={styles.previewContainer}>
+            <Image source={{ uri: image }} style={styles.previewImage} />
+            <TouchableOpacity style={styles.removeImageBtn} onPress={handleRemoveImage}>
+              <Ionicons name="close-circle" size={28} color="#FF6B6B" />
+            </TouchableOpacity>
           </View>
-        ))}
-      </ScrollView>
+        )}
 
-      {/* Vista previa de imagen antes de enviar */}
-      {image && (
-        <View style={styles.previewContainer}>
-          <Image source={{ uri: image }} style={styles.previewImage} />
-          <TouchableOpacity style={styles.removeImageBtn} onPress={handleRemoveImage}>
-            <Ionicons name="close-circle" size={28} color="#FF6B6B" />
+        <View style={styles.inputContainer}>
+          <TouchableOpacity style={styles.imageButton} onPress={handlePickImage}>
+            <Ionicons name="add" size={24} color="#2196F3" />
+          </TouchableOpacity>
+          <TextInput
+            style={styles.input}
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="Escribe tu pregunta aquí..."
+            placeholderTextColor="#666"
+          />
+          <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
+            <Ionicons name="send" size={24} color="white" />
           </TouchableOpacity>
         </View>
-      )}
-
-      <View style={styles.inputContainer}>
-        <TouchableOpacity style={styles.imageButton} onPress={handlePickImage}>
-          <Ionicons name="add" size={24} color="#2196F3" />
-        </TouchableOpacity>
-        <TextInput
-          style={styles.input}
-          value={inputText}
-          onChangeText={setInputText}
-          placeholder="Escribe tu pregunta aquí..."
-          placeholderTextColor="#666"
-        />
-        <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
-          <Ionicons name="send" size={24} color="white" />
-        </TouchableOpacity>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

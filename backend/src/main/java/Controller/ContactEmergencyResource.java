@@ -31,6 +31,13 @@ public class ContactEmergencyResource {
     @POST
     @Transactional
     public Response create(ContactEmergency nuevo) {
+        // Validación simple: ajusta según tus campos obligatorios
+        if (nuevo == null || 
+            nuevo.getNombre() == null || nuevo.getNombre().trim().isEmpty() ||
+            nuevo.getTelefono() == null || nuevo.getTelefono().trim().isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                           .entity("El contacto de emergencia no puede estar vacío.").build();
+        }
         repository.persist(nuevo);
         return Response.status(Response.Status.CREATED).entity(nuevo).build();
     }

@@ -177,7 +177,10 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingTop: 0 }}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingTop: 60 }} // 140 (top del botón) + 60 (alto del botón)
+    >
       <LinearGradient
         colors={["#23272f", "#23272f", "#23272f"]} // Fondo gris oscuro uniforme
         style={[styles.gradientHeader, { paddingTop: 20 }]}
@@ -301,7 +304,7 @@ export default function ProfileScreen() {
         </View>
         <View style={styles.infoRow}>
           <IconSymbol size={20} name="pills.fill" color="#4CAF50" />
-          <ThemedText style={styles.infoText}>Medicamento importante: {userData.importantMedication || 'No especificado'}</ThemedText>
+          <ThemedText style={styles.infoText}>Medicamento importante: {userData.importantMedication || 'No especificado'} </ThemedText>
         </View>
       </ThemedView>
 
@@ -322,7 +325,7 @@ export default function ProfileScreen() {
                 </View>
                 <View style={styles.detailRow}>
                   <IconSymbol size={20} name="clock.fill" color="#FFD93D" />
-                  <ThemedText style={styles.detailText}>Frecuencia: {medication.frequency}</ThemedText>
+                  <ThemedText style={styles.detailText}>Frecuencia: cada {medication.frequency} {medication.frequency == "1" ? "hora" : "horas" }</ThemedText>
                 </View>
                 <View style={styles.detailRow}>
                   <IconSymbol size={20} name="alarm.fill" color="#FF6B6B" />

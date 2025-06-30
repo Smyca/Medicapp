@@ -126,11 +126,13 @@ export default function EditProfileScreen() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(
-          emergencyContacts.map(c => ({
-            nombre: c.name,
-            telefono: c.phone,
-            relacion: c.relation,
-          }))
+          emergencyContacts
+            .filter(c => c.name.trim() !== '' || c.phone.trim() !== '' || c.relation.trim() !== '')
+            .map(c => ({
+              nombre: c.name,
+              telefono: c.phone,
+              relacion: c.relation,
+            }))
         ),
       });
 
