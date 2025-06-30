@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
-import React, { useEffect, useState } from 'react';
-import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { Alert, StyleSheet, TouchableOpacity, View, Modal, Text } from 'react-native';
 
 const PANIC_BAR_HEIGHT = 60;
 
@@ -12,10 +12,25 @@ export default function GlobalPanicButton() {
     emergencyContact: '',
     customMessage: '',
   });
+  const [showModal, setShowModal] = useState(false);
+  const [timer, setTimer] = useState(15);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     loadSettings();
   }, []);
+
+  useEffect(() => {
+    if (showModal && timer > 0) {
+      timerRef.current = setTimeout(() => setTimer(t => t - 1), 1000);
+    }
+    if (timer === 0 && showModal) {
+      handleConfirm();
+    }
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [showModal, timer]);
 
   const loadSettings = async () => {
     try {
@@ -28,36 +43,46 @@ export default function GlobalPanicButton() {
     }
   };
 
+  const callEmergencyContacts = async (contacts) => {
+    for (const contact of contacts.slice(0, 2)) { // Solo los dos primeros
+      try {
+        await fetch('https://abcd1234.ngrok.io/panic-call', { // Usa aquí tu URL pública de ngrok
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ to: contact.phone }),
+        });
+      } catch (error) {
+        console.error('Error llamando a contacto:', contact.phone, error);
+      }
+    }
+  };
+
   const handlePanicButton = async () => {
     if (!settings.isEnabled) {
       Alert.alert('Botón de pánico desactivado', 'El botón de pánico está desactivado en la configuración.');
       return;
     }
+    setTimer(15);
+    setShowModal(true);
+  };
 
+  const handleConfirm = async () => {
+    setShowModal(false);
     try {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert(
-          'Permiso de ubicación',
-          'Se necesita permiso para acceder a la ubicación',
-          [{ text: 'OK' }]
-        );
-        return;
-      }
-
-      let location = await Location.getCurrentPositionAsync({});
-      const message = settings.customMessage || '¡Necesito ayuda!';
-      const contact = settings.emergencyContact ? `\nContacto de emergencia: ${settings.emergencyContact}` : '';
-      
+      const contactsRaw = await AsyncStorage.getItem('emergencyContacts');
+      const contacts = contactsRaw ? JSON.parse(contactsRaw) : [];
+      await callEmergencyContacts(contacts);
       Alert.alert(
         '¡Botón de pánico activado!',
-        `${message}\n\nTu ubicación actual es: ${location.coords.latitude}, ${location.coords.longitude}.${contact}`,
-        [{ text: 'OK' }]
+        `Se está llamando a tus contactos de emergencia.`
       );
     } catch (error) {
-      console.error(error);
-      Alert.alert('Error', 'Error al obtener la ubicación');
+      Alert.alert('Error', 'No se pudieron llamar a los contactos de emergencia');
     }
+  };
+
+  const handleCancel = () => {
+    setShowModal(false);
   };
 
   if (!settings.isEnabled) {
@@ -73,6 +98,33 @@ export default function GlobalPanicButton() {
       >
         <Ionicons name="alert-circle" size={32} color="white" style={styles.icon} />
       </TouchableOpacity>
+      <Modal
+        visible={showModal}
+        transparent
+        animationType="fade"
+        onRequestClose={handleCancel}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>¡Activaste el botón de pánico!</Text>
+            <Text style={styles.modalText}>
+              Estás en problemas?
+            </Text>
+            <Text style={styles.modalTimer}>{timer}s</Text>
+            <Text style={styles.modalSubText}>
+              Esto llamará a tus contactos de emergencia.
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={styles.modalBtnYes} onPress={handleConfirm}>
+                <Text style={styles.modalBtnText}>Sí</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalBtnNo} onPress={handleCancel}>
+                <Text style={styles.modalBtnText}>No</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -103,4 +155,73 @@ const styles = StyleSheet.create({
   icon: {
     alignSelf: 'center',
   },
-}); 
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#23272f',
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    width: 320,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  modalTitle: {
+    color: '#FF3B30',
+    fontWeight: 'bold',
+    fontSize: 20,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  modalText: {
+    color: '#fff',
+    fontSize: 16,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  modalTimer: {
+    color: '#FFD93D',
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  modalSubText: {
+    color: '#fff',
+    fontSize: 14,
+    marginBottom: 18,
+    textAlign: 'center',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '80%',
+  },
+  modalBtnYes: {
+    backgroundColor: '#FF3B30',
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 28,
+    marginHorizontal: 8,
+  },
+  modalBtnNo: {
+    backgroundColor: '#23272f',
+    borderWidth: 1,
+    borderColor: '#FF3B30',
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 28,
+    marginHorizontal: 8,
+  },
+  modalBtnText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+});

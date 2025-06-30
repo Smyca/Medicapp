@@ -503,7 +503,7 @@ export function GPSTab() {
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.headerRow}>
-          <ThemedText style={styles.assistantText}>Asistente Virtual</ThemedText>
+          <ThemedText style={styles.assistantText}>Asistente ubicación</ThemedText>
           <TouchableOpacity onPress={handleMute} style={styles.muteButton}>
             <Ionicons name={muted ? 'volume-mute' : 'volume-high'} size={28} color={muted ? 'gray' : '#007AFF'} />
           </TouchableOpacity>

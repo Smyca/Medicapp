@@ -28,6 +28,14 @@ export default function RegistroUsuario() {
         return;
       }
 
+      // Usuario de desarrollo (login local)
+      if (email === 'user@gmail.com' && password === 'contraseña1') {
+        await AsyncStorage.setItem('userEmail', email);
+        await AsyncStorage.setItem('usuarioId', 'dev-usuario');
+        router.replace('/(tabs)');
+        return;
+      }
+
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

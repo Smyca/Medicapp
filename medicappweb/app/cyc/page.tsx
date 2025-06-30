@@ -11,12 +11,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-
 interface UserData {
   nombre: string;
   correo: string;
   contrasena: string;
-  rut: string;
 }
 
 const datosInicialesCompletos: UserData[] = [
@@ -24,75 +22,62 @@ const datosInicialesCompletos: UserData[] = [
     nombre: "Juan Pérez",
     correo: "juan@example.com",
     contrasena: "123456",
-    rut: "11.111.111-1",
   },
   {
     nombre: "Ana Gómez",
     correo: "ana@example.com",
     contrasena: "abcdef",
-    rut: "22.222.222-2",
   },
   {
     nombre: "Carlos Ruiz",
     correo: "carlos@example.com",
     contrasena: "qwerty",
-    rut: "33.333.333-3",
   },
   {
     nombre: "María López",
     correo: "maria@example.com",
     contrasena: "maria123",
-    rut: "44.444.444-4",
   },
   {
     nombre: "Pedro Sánchez",
     correo: "pedro@example.com",
     contrasena: "pedro456",
-    rut: "55.555.555-5",
   },
   {
     nombre: "Lucía Torres",
     correo: "lucia@example.com",
     contrasena: "lucia789",
-    rut: "66.666.666-6",
   },
   {
     nombre: "Miguel Díaz",
     correo: "miguel@example.com",
     contrasena: "miguel321",
-    rut: "77.777.777-7",
   },
   {
     nombre: "Sofía Ramírez",
     correo: "sofia@example.com",
     contrasena: "sofia654",
-    rut: "88.888.888-8",
   },
   {
     nombre: "Diego Herrera",
     correo: "diego@example.com",
     contrasena: "diego987",
-    rut: "99.999.999-9",
   },
   {
     nombre: "Valentina Castro",
     correo: "valentina@example.com",
     contrasena: "valen123",
-    rut: "10.101.010-1",
   },
   {
     nombre: "Andrés Molina",
     correo: "andres@example.com",
     contrasena: "andres456",
-    rut: "12.121.212-1",
   },
 ];
 
 export default function CycPage() {
   const [filtroNombre, setFiltroNombre] = useState("");
   const [filtroCorreo, setFiltroCorreo] = useState("");
-  const [filtroRut, setFiltroRut] = useState("");
-
   const [datos, setDatos] = useState<UserData[]>(datosInicialesCompletos);
 
   const [seleccionados, setSeleccionados] = useState<string[]>([]);
@@ -101,8 +86,7 @@ export default function CycPage() {
     return datos.filter(
       (dato) =>
         dato.nombre.toLowerCase().includes(filtroNombre.toLowerCase()) &&
-        dato.correo.toLowerCase().includes(filtroCorreo.toLowerCase()) &&
-        dato.rut.toLowerCase().includes(filtroRut.toLowerCase())
+        dato.correo.toLowerCase().includes(filtroCorreo.toLowerCase())
     );
   };
   const todosSeleccionados =
@@ -195,13 +179,6 @@ export default function CycPage() {
               onChange={(e) => setFiltroCorreo(e.target.value)}
               className="px-2 py-1 rounded border bg-background text-foreground"
             />
-            <Input
-              type="text"
-              placeholder="Filtrar por RUT"
-              value={filtroRut}
-              onChange={(e) => setFiltroRut(e.target.value)}
-              className="px-2 py-1 rounded border bg-background text-foreground"
-            />
           </div>
           <div className="flex w-full max-w-6xl justify-end mb-2">
             <Button onClick={handleSendMail} disabled={seleccionados.length === 0}>
@@ -222,15 +199,13 @@ export default function CycPage() {
                   </th>
                   <th className="px-2 py-1 border">Nombre</th>
                   <th className="px-2 py-1 border">Correo electrónico</th>
-                  <th className="px-2 py-1 border">Contraseña</th>
-                  <th className="px-2 py-1 border">RUT</th>
                   <th className="px-2 py-1 border">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {datosFiltrados().length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center py-4 text-muted-foreground">
+                    <td colSpan={4} className="text-center py-4 text-muted-foreground">
                       No se encontraron resultados.
                     </td>
                   </tr>
@@ -247,13 +222,12 @@ export default function CycPage() {
                       </td>
                       <td className="px-2 py-1 border">{dato.nombre}</td>
                       <td className="px-2 py-1 border">{dato.correo}</td>
-                      <td className="px-2 py-1 border">{dato.contrasena}</td>
-                      <td className="px-2 py-1 border">{dato.rut}</td>
-                      <td className="px-2 py-1 border">
+                      <td className="px-2 py-1 border text-center">
                         <Button
                           variant="destructive"
                           size="sm"
                           onClick={() => handleDelete(dato.correo)}
+                          className="flex items-center justify-center mx-auto"
                         >
                           X
                         </Button>
