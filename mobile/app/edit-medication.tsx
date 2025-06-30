@@ -7,6 +7,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Platform, ScrollView, StyleSheet, Switch, TextInput, TouchableOpacity, View } from 'react-native';
 import { API_URL } from '@env';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) =>
   `${i.toString().padStart(2, '0')}:00`
@@ -22,6 +23,7 @@ export default function EditMedicationScreen() {
     notes: '',
   });
   const [reminder, setReminder] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -117,19 +119,48 @@ export default function EditMedicationScreen() {
       }
       if (reminder) {
         await Notifications.requestPermissionsAsync();
+        const [startHour, startMinute] = medication.time.split(':').map(Number);
+        const intervalHours = Number(medication.frequency) || 24;
+
+          // Calcular la próxima fecha/hora de notificación
+        const now = new Date();
+        let firstNotification = new Date(now);
+        firstNotification.setHours(startHour, startMinute, 0, 0);
+        if (firstNotification <= now) {
+          // Si la hora ya pasó hoy, programa para mañana
+          firstNotification.setDate(firstNotification.getDate() + 1);
+        }
+
+        // Programar la primera notificación exacta
         await Notifications.scheduleNotificationAsync({
           content: {
             title: 'Recordatorio de medicamento',
             body: `Es hora de tomar: ${medication.name}`,
             sound: 'default',
           },
-          trigger: {
-            channelId: 'medicamentos',
-            hour: 8,
-            minute: 0,
-            repeats: true,
-          },
+          trigger: firstNotification, // tipo date
         });
+
+        // Programar notificaciones para cada X horas desde la hora elegida
+        for (let i = 0; i < 24; i += intervalHours) {
+          const hour = (startHour + i) % 24;
+          await Notifications.scheduleNotificationAsync({
+            content: {
+              title: 'Recordatorio de medicamento',
+              body: `Medicamento: ${medication.name} agendado!`,
+              sound: 'default',
+            },
+            trigger: {
+              channelId: 'medicamentos',
+              hour,
+              minute: startMinute,
+              repeats: true,
+              
+            },
+          });
+        }
+
+       
       }
       router.back();
     } catch (error) {
@@ -216,7 +247,7 @@ export default function EditMedicationScreen() {
           </View>
           <View style={styles.inputGroup}>
             <ThemedText style={styles.label}>Frecuencia *</ThemedText>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center',justifyContent: 'center' }}>
               <ThemedText style={{ fontSize: 18, color: '#A9A9A9' }}>Cada </ThemedText>
               <TextInput
                 style={[styles.input, { width: 60, marginRight: 8, marginLeft: 4, textAlign: 'center' }]}
@@ -241,17 +272,76 @@ export default function EditMedicationScreen() {
           </View>
           <View style={styles.inputGroup}>
             <ThemedText style={styles.label}>Hora *</ThemedText>
-            <View style={styles.optionsRow}>
-              {HOUR_OPTIONS.map(opt => (
-                <TouchableOpacity
-                  key={opt}
-                  style={[styles.optionBtn, medication.time === opt && styles.optionBtnSelected]}
-                  onPress={() => setMedication({ ...medication, time: opt })}
-                >
-                  <ThemedText style={[styles.optionBtnText, medication.time === opt && styles.optionBtnTextSelected]}>{opt}</ThemedText>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <TouchableOpacity
+              style={[
+                styles.input,
+                {
+                  width: 200,
+                  minHeight: 54,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  alignSelf: 'center',
+                  paddingVertical: 18,
+                },
+              ]}
+              onPress={() => setShowTimePicker(true)}
+            >
+              <ThemedText style={{ color: '#fff', fontSize: 24, letterSpacing: 2 }}>
+                {medication.time ? medication.time.slice(0, 5) : 'Seleccionar'}
+              </ThemedText>
+            </TouchableOpacity>
+            {showTimePicker && (
+              <DateTimePicker
+                value={
+                  medication.time
+                    ? (() => {
+                        const [h, m] = medication.time.split(':').map(Number);
+                        const now = new Date();
+                        now.setHours(h);
+                        now.setMinutes(m);
+                        now.setSeconds(0);
+                        now.setMilliseconds(0);
+                        return now;
+                      })()
+                    : new Date()
+                }
+                mode="time"
+                is24Hour={true}
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={(event, selectedDate) => {
+                  if (Platform.OS === 'android') {
+                    if (event.type === 'set' && selectedDate) {
+                      const hours = selectedDate.getHours().toString().padStart(2, '0');
+                      const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
+                      setMedication({ ...medication, time: `${hours}:${minutes}` });
+                    }
+                    setShowTimePicker(false);
+                  } else {
+                    if (selectedDate) {
+                      const hours = selectedDate.getHours().toString().padStart(2, '0');
+                      const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
+                      setMedication({ ...medication, time: `${hours}:${minutes}` });
+                    }
+                    // No cerrar aquí, el usuario debe cerrar el modal manualmente
+                  }
+                }}
+                style={{ backgroundColor: '#181A20' }}
+              />
+            )}
+            {Platform.OS === 'ios' && showTimePicker && (
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#1976D2',
+                  padding: 12,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                  marginTop: 10,
+                }}
+                onPress={() => setShowTimePicker(false)}
+              >
+                <ThemedText style={{ color: '#fff', fontWeight: 'bold' }}>Aceptar</ThemedText>
+              </TouchableOpacity>
+            )}
           </View>
           <View style={styles.inputGroup}>
             <ThemedText style={styles.label}>¿Activar recordatorio?</ThemedText>

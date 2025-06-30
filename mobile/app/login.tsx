@@ -3,76 +3,28 @@ import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, Link } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Alert, StyleSheet, TextInput, TouchableOpacity, View, Text, Platform } from 'react-native';
 import { API_URL } from '@env';
 
 console.log('API_URL:', API_URL);
 
-
-// Componente de alerta visual
-function AppAlert({ message, onClose }: { message: string, onClose: () => void }) {
-  if (!message) return null;
-  return (
-    <View style={styles.appAlertContainer}>
-      <IconSymbol name="exclamationmark.triangle.fill" size={20} color="#FF6B6B" style={{ marginRight: 8 }} />
-      <Text style={styles.appAlertText}>{message}</Text>
-      <TouchableOpacity onPress={onClose} style={{ marginLeft: 8 }}>
-        <IconSymbol name="xmark.circle.fill" size={20} color="#FF6B6B" />
-      </TouchableOpacity>
-    </View>
-  );
-}
-
 function showAlert(title: string, message: string) {
-  setAlertMsg(`${title}: ${message}`);
-}
-
-// Guardar usuario localmente
-function setUserData(email: string, password: string) {
-  const user = { email, password };
   if (Platform.OS === 'web') {
-    localStorage.setItem('localUser', JSON.stringify(user));
+    window.alert(`${title}\n${message}`);
   } else {
-    AsyncStorage.setItem('localUser', JSON.stringify(user));
+    Alert.alert(title, message);
   }
-}
-
-async function checkLocalUser(email: string, password: string) {
-  let userStr: string | null = null;
-  if (Platform.OS === 'web') {
-    userStr = localStorage.getItem('localUser');
-  } else {
-    userStr = await AsyncStorage.getItem('localUser');
-  }
-  if (!userStr) return false;
-  const user = JSON.parse(userStr);
-  return user.email === email && user.password === password;
 }
 
 export default function RegistroUsuario() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [alertMsg, setAlertMsg] = useState('');
-
-  // Crear usuario local por defecto al montar el componente
-  useEffect(() => {
-    setUserData('1234', 'pass');
-  }, []);
 
   const handleLogin = async () => {
     try {
       if (!email || !password) {
         showAlert('Error', 'Por favor ingresa tu email y contraseña');
-        return;
-      }
-
-      // Intentar login local primero
-      const isLocal = await checkLocalUser(email, password);
-      if (isLocal) {
-        await AsyncStorage.setItem('userEmail', email);
-        await AsyncStorage.setItem('usuarioId', '1'); // ID fijo para local
-        router.replace('/(tabs)');
         return;
       }
 
@@ -107,8 +59,6 @@ export default function RegistroUsuario() {
       </View>
 
       <ThemedView style={styles.formContainer}>
-        {/* ALERTA DENTRO DEL CARD */}
-        <AppAlert message={alertMsg} onClose={() => setAlertMsg('')} />
         <View style={styles.inputContainer}>
           <IconSymbol size={24} name="envelope.fill" color="#666" style={styles.inputIcon} />
           <TextInput
@@ -157,6 +107,24 @@ export default function RegistroUsuario() {
     </View>
   );
 }
+
+
+
+
+function AppAlert({ message, onClose }: { message: string, onClose: () => void }) {
+  if (!message) return null;
+  return (
+    <View style={styles.appAlertContainer}>
+      <IconSymbol name="exclamationmark.triangle.fill" size={20} color="#FF6B6B" style={{ marginRight: 8 }} />
+      <Text style={styles.appAlertText}>{message}</Text>
+      <TouchableOpacity onPress={onClose} style={{ marginLeft: 8 }}>
+        <IconSymbol name="xmark.circle.fill" size={20} color="#FF6B6B" />
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+
 
 const styles = StyleSheet.create({
   container: {

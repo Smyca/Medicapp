@@ -1,21 +1,21 @@
 services:
-  backend-medicapp:
-    build:
-      context: ./backend
-    # image: medicapp-image
-    environment:
-      - DB_HOST
-      - DB_PORT
-      - DB_NAME
-      - DB_USER
-      - DB_PASS
-    ports: 
-      - "8080:8080"
-    container_name: backend-medicapp
-    depends_on:
-      - mysql-medicapp  
-    networks:
-      - network_custom
+  # backend-medicapp:
+  #   build:
+  #     context: ./backend
+  #   # image: medicapp-image
+  #   environment:
+  #     - DB_HOST
+  #     - DB_PORT
+  #     - DB_NAME
+  #     - DB_USER
+  #     - DB_PASS
+  #   ports: 
+  #     - "8080:8080"
+  #   container_name: backend-medicapp
+  #   depends_on:
+  #     - mysql-medicapp  
+  #   networks:
+  #     - network_custom
 
   mysql-medicapp:
     image: mysql:latest
@@ -31,11 +31,11 @@ services:
       - data_medicapp:/var/lib/mysql
     networks:
       - network_custom
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+    # healthcheck:
+    #   test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+    #   interval: 5s
+    #   timeout: 5s
+    #   retries: 10
 
 
 volumes:

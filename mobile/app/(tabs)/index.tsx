@@ -28,6 +28,8 @@ interface EmergencyContact {
 
 export default function ProfileScreen() {
   const [userData, setUserData] = useState({
+    name: '',
+    age: '',
     address: '',
     medicalNotes: '',
     bloodType: '',
@@ -259,7 +261,7 @@ export default function ProfileScreen() {
               {userData.profileImage ? (
                 <Image source={{ uri: userData.profileImage }} style={styles.profileImage} />
               ) : (
-                <Image source={{ uri: 'https://randomuser.me/api/portraits/men/1.jpg' }} style={styles.profileImage} />
+                <Image source={require('../../assets/images/user-icon.png')} style={styles.profileImage} />
               )}
             </View>
           </View>
