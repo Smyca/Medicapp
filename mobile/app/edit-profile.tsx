@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, TouchableOpacity, View, Alert } from 'react-native';
 import { API_URL } from '@env';
 
 export default function EditProfileScreen() {
@@ -144,192 +144,198 @@ export default function EditProfileScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <LinearGradient
-        colors={["#23272f", "#23272f", "#23272f"]}
-        style={styles.gradientHeader}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-      >
-        {/* FOTO Y NOMBRE */}
-        <View style={{ alignItems: 'center', marginTop: 10 }}>
-          {/* Aquí iría el avatar/foto */}
-          {/* <Image ... /> */}
-          <ThemedText
-            style={{
-              color: '#2196F3',
-              textDecorationLine: 'underline',
-              marginTop: 8,
-              marginBottom: 2,
-              fontSize: 15,
-            }}
-          >
-            Editar foto
-          </ThemedText>
-          <ThemedText
-            style={{
-              color: '#fff',
-              fontWeight: 'bold',
-              fontSize: 28,
-              marginTop: 6,
-              textShadowColor: '#000',
-              textShadowOffset: { width: 0, height: 2 },
-              textShadowRadius: 6,
-            }}
-          >
-            Usuario
-          </ThemedText>
-          <ThemedText
-            style={{
-              color: '#ccc',
-              fontSize: 16,
-              marginTop: 2,
-              marginBottom: 8,
-            }}
-          >
-            {age ? `Edad: ${age}` : 'Edad no especificada'}
-          </ThemedText>
-        </View>
-      </LinearGradient>
-
-      {/* Información de emergencia */}
-      <View style={styles.formCard}>
-        <ThemedText style={styles.sectionTitle}>Información de Emergencia</ThemedText>
-        <ThemedText style={styles.label}>Dirección o zona</ThemedText>
-        <TextInput
-          style={styles.input}
-          value={emergencyData.address}
-          onChangeText={text => {
-            const clean = text.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
-            handleEmergencyChange('address', clean);
-          }}
-          placeholder="Dirección o zona de residencia"
-          placeholderTextColor="#888"
-        />
-        <ThemedText style={styles.label}>Notas generales</ThemedText>
-        <TextInput
-          style={styles.input}
-          value={emergencyData.medicalNotes}
-          onChangeText={text => {
-            const clean = text.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
-            handleEmergencyChange('medicalNotes', clean);
-          }}
-          placeholder="Notas relevantes para emergencias"
-          placeholderTextColor="#888"
-        />
-
-        {/* CAMPO DE EDAD */}
-        <ThemedText style={styles.label}>Edad</ThemedText>
-        <TextInput
-          style={styles.input}
-          value={age}
-          onChangeText={text => {
-            const clean = text.replace(/[^0-9]/g, '');
-            setAge(clean);
-          }}
-          placeholder="Edad"
-          keyboardType="numeric"
-          maxLength={3}
-          placeholderTextColor="#888"
-        />
-
-        {/* Información médica */}
-        <ThemedText style={styles.sectionTitle}>Información Médica</ThemedText>
-        <ThemedText style={styles.label}>Tipo de sangre</ThemedText>
-        <TextInput
-          style={styles.input}
-          value={medicalData.bloodType}
-          onChangeText={text => {
-            const clean = text.replace(/[^a-zA-Z+\-*/]/g, '').slice(0, 5);
-            handleMedicalChange('bloodType', clean);
-          }}
-          placeholder="Ej: O+, A-, etc."
-          maxLength={5}
-          placeholderTextColor="#888"
-        />
-        <ThemedText style={styles.label}>Alergias</ThemedText>
-        <TextInput
-          style={styles.input}
-          value={medicalData.allergies}
-          onChangeText={text => {
-            const clean = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
-            handleMedicalChange('allergies', clean);
-          }}
-          placeholder="Alergias importantes"
-          placeholderTextColor="#888"
-        />
-        <ThemedText style={styles.label}>Enfermedades crónicas</ThemedText>
-        <TextInput
-          style={styles.input}
-          value={medicalData.chronicDiseases}
-          onChangeText={text => {
-            const clean = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
-            handleMedicalChange('chronicDiseases', clean);
-          }}
-          placeholder="Ej: Diabetes, hipertensión, etc."
-          placeholderTextColor="#888"
-        />
-        <ThemedText style={styles.label}>Medicamento importante</ThemedText>
-        <TextInput
-          style={styles.input}
-          value={medicalData.importantMedication}
-          onChangeText={text => {
-            const clean = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
-            handleMedicalChange('importantMedication', clean);
-          }}
-          placeholder="Nombre del medicamento"
-          placeholderTextColor="#888"
-        />
-
-        {/* Contactos de emergencia */}
-        <ThemedText style={styles.sectionTitle}>Contactos de Emergencia</ThemedText>
-        {emergencyContacts.map((contact, idx) => (
-          <View key={idx} style={styles.contactCard}>
-            {/* NOMBRE: solo letras y tildes */}
-            <TextInput
-              style={styles.input}
-              value={contact.name}
-              onChangeText={text => {
-                const clean = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
-                handleContactChange(idx, 'name', clean);
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={60}
+    >
+      <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
+        <LinearGradient
+          colors={["#23272f", "#23272f", "#23272f"]}
+          style={styles.gradientHeader}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+        >
+          {/* FOTO Y NOMBRE */}
+          <View style={{ alignItems: 'center', marginTop: 10 }}>
+            {/* Aquí iría el avatar/foto */}
+            {/* <Image ... /> */}
+            <ThemedText
+              style={{
+                color: '#2196F3',
+                textDecorationLine: 'underline',
+                marginTop: 8,
+                marginBottom: 2,
+                fontSize: 15,
               }}
-              placeholder="Nombre"
-              placeholderTextColor="#888"
-            />
-            {/* TELÉFONO: solo números */}
-            <TextInput
-              style={styles.input}
-              value={contact.phone}
-              onChangeText={text => {
-                const clean = text.replace(/[^0-9]/g, '');
-                handleContactChange(idx, 'phone', clean);
+            >
+              Editar foto
+            </ThemedText>
+            <ThemedText
+              style={{
+                color: '#fff',
+                fontWeight: 'bold',
+                fontSize: 28,
+                marginTop: 6,
+                textShadowColor: '#000',
+                textShadowOffset: { width: 0, height: 2 },
+                textShadowRadius: 6,
               }}
-              placeholder="Teléfono"
-              keyboardType="phone-pad"
-              placeholderTextColor="#888"
-            />
-            {/* RELACIÓN: solo letras */}
-            <TextInput
-              style={styles.input}
-              value={contact.relation}
-              onChangeText={text => {
-                const clean = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
-                handleContactChange(idx, 'relation', clean);
+            >
+              Usuario
+            </ThemedText>
+            <ThemedText
+              style={{
+                color: '#ccc',
+                fontSize: 16,
+                marginTop: 2,
+                marginBottom: 8,
               }}
-              placeholder="Relación (hijo, vecino, etc.)"
-              placeholderTextColor="#888"
-            />
+            >
+              {age ? `Edad: ${age}` : 'Edad no especificada'}
+            </ThemedText>
           </View>
-        ))}
-        <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-          <IconSymbol size={22} name="checkmark.circle.fill" color="#fff" />
-          <ThemedText style={styles.saveBtnText}>Guardar cambios</ThemedText>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-          <ThemedText style={styles.backBtnText}>Volver</ThemedText>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+        </LinearGradient>
+
+        {/* Información de emergencia */}
+        <View style={styles.formCard}>
+          <ThemedText style={styles.sectionTitle}>Información de Emergencia</ThemedText>
+          <ThemedText style={styles.label}>Dirección o zona</ThemedText>
+          <TextInput
+            style={styles.input}
+            value={emergencyData.address}
+            onChangeText={text => {
+              const clean = text.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+              handleEmergencyChange('address', clean);
+            }}
+            placeholder="Dirección o zona de residencia"
+            placeholderTextColor="#888"
+          />
+          <ThemedText style={styles.label}>Notas generales</ThemedText>
+          <TextInput
+            style={styles.input}
+            value={emergencyData.medicalNotes}
+            onChangeText={text => {
+              const clean = text.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+              handleEmergencyChange('medicalNotes', clean);
+            }}
+            placeholder="Notas relevantes para emergencias"
+            placeholderTextColor="#888"
+          />
+
+          {/* CAMPO DE EDAD */}
+          <ThemedText style={styles.label}>Edad</ThemedText>
+          <TextInput
+            style={styles.input}
+            value={age}
+            onChangeText={text => {
+              const clean = text.replace(/[^0-9]/g, '');
+              setAge(clean);
+            }}
+            placeholder="Edad"
+            keyboardType="numeric"
+            maxLength={3}
+            placeholderTextColor="#888"
+          />
+
+          {/* Información médica */}
+          <ThemedText style={styles.sectionTitle}>Información Médica</ThemedText>
+          <ThemedText style={styles.label}>Tipo de sangre</ThemedText>
+          <TextInput
+            style={styles.input}
+            value={medicalData.bloodType}
+            onChangeText={text => {
+              const clean = text.replace(/[^a-zA-Z+\-*/]/g, '').slice(0, 5);
+              handleMedicalChange('bloodType', clean);
+            }}
+            placeholder="Ej: O+, A-, etc."
+            maxLength={5}
+            placeholderTextColor="#888"
+          />
+          <ThemedText style={styles.label}>Alergias</ThemedText>
+          <TextInput
+            style={styles.input}
+            value={medicalData.allergies}
+            onChangeText={text => {
+              const clean = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+              handleMedicalChange('allergies', clean);
+            }}
+            placeholder="Alergias importantes"
+            placeholderTextColor="#888"
+          />
+          <ThemedText style={styles.label}>Enfermedades crónicas</ThemedText>
+          <TextInput
+            style={styles.input}
+            value={medicalData.chronicDiseases}
+            onChangeText={text => {
+              const clean = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+              handleMedicalChange('chronicDiseases', clean);
+            }}
+            placeholder="Ej: Diabetes, hipertensión, etc."
+            placeholderTextColor="#888"
+          />
+          <ThemedText style={styles.label}>Medicamento importante</ThemedText>
+          <TextInput
+            style={styles.input}
+            value={medicalData.importantMedication}
+            onChangeText={text => {
+              const clean = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+              handleMedicalChange('importantMedication', clean);
+            }}
+            placeholder="Nombre del medicamento"
+            placeholderTextColor="#888"
+          />
+
+          {/* Contactos de emergencia */}
+          <ThemedText style={styles.sectionTitle}>Contactos de Emergencia</ThemedText>
+          {emergencyContacts.map((contact, idx) => (
+            <View key={idx} style={styles.contactCard}>
+              {/* NOMBRE: solo letras y tildes */}
+              <TextInput
+                style={styles.input}
+                value={contact.name}
+                onChangeText={text => {
+                  const clean = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+                  handleContactChange(idx, 'name', clean);
+                }}
+                placeholder="Nombre"
+                placeholderTextColor="#888"
+              />
+              {/* TELÉFONO: solo números */}
+              <TextInput
+                style={styles.input}
+                value={contact.phone}
+                onChangeText={text => {
+                  const clean = text.replace(/[^0-9]/g, '');
+                  handleContactChange(idx, 'phone', clean);
+                }}
+                placeholder="Teléfono"
+                keyboardType="phone-pad"
+                placeholderTextColor="#888"
+              />
+              {/* RELACIÓN: solo letras */}
+              <TextInput
+                style={styles.input}
+                value={contact.relation}
+                onChangeText={text => {
+                  const clean = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+                  handleContactChange(idx, 'relation', clean);
+                }}
+                placeholder="Relación (hijo, vecino, etc.)"
+                placeholderTextColor="#888"
+              />
+            </View>
+          ))}
+          <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
+            <IconSymbol size={22} name="checkmark.circle.fill" color="#fff" />
+            <ThemedText style={styles.saveBtnText}>Guardar cambios</ThemedText>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+            <ThemedText style={styles.backBtnText}>Volver</ThemedText>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 

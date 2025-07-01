@@ -10,10 +10,6 @@ export default function AsistenteScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <IconSymbol name="sparkles" size={36} color="#FFD93D" />
-        <ThemedText style={styles.title}>Asistente Inteligente</ThemedText>
-        <ThemedText style={styles.subtitle}>
-          Tu asistente virtual con IA. ¡Hazme cualquier pregunta !
-        </ThemedText>
       </View>
       <VirtualAssistant />
     </View>

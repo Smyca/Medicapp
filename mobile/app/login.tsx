@@ -4,8 +4,9 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, Link } from 'expo-router';
 import { useState } from 'react';
-import { Alert, StyleSheet, TextInput, TouchableOpacity, View, Text, Platform } from 'react-native';
+import { Alert, StyleSheet, TextInput, TouchableOpacity, View, Text, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
 import { API_URL } from '@env';
+import { Ionicons } from '@expo/vector-icons';
 
 console.log('API_URL:', API_URL);
 
@@ -20,6 +21,7 @@ function showAlert(title: string, message: string) {
 export default function RegistroUsuario() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // Nuevo estado
 
   const handleLogin = async () => {
     try {
@@ -59,63 +61,83 @@ export default function RegistroUsuario() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.logoContainer}>
-        <IconSymbol size={100} name="heart.circle.fill" color="#2196F3" />
-        <ThemedText type="title" style={styles.title}>MedicApp</ThemedText>
-        <ThemedText style={styles.subtitle}>Tu asistente médico personal</ThemedText>
-      </View>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 30}
+    >
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.container}>
+          <View style={styles.logoContainer}>
+            <IconSymbol size={100} name="heart.circle.fill" color="#2196F3" />
+            <ThemedText type="title" style={styles.title}>MedicApp</ThemedText>
+            <ThemedText style={styles.subtitle}>Tu asistente médico personal</ThemedText>
+          </View>
 
-      <ThemedView style={styles.formContainer}>
-        <View style={styles.inputContainer}>
-          <IconSymbol size={24} name="envelope.fill" color="#666" style={styles.inputIcon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            placeholderTextColor="#999"
-          />
-        </View>
+          <ThemedView style={styles.formContainer}>
+            <View style={styles.inputContainer}>
+              <IconSymbol size={24} name="envelope.fill" color="#666" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Email"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                placeholderTextColor="#999"
+              />
+            </View>
 
-        <View style={styles.inputContainer}>
-          <IconSymbol size={24} name="lock.fill" color="#666" style={styles.inputIcon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Contraseña"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            placeholderTextColor="#999"
-          />
-        </View>
+            <View style={styles.inputContainer}>
+              <IconSymbol size={24} name="lock.fill" color="#666" style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Contraseña"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                placeholderTextColor="#999"
+              />
+              <TouchableOpacity
+                onPress={() => setShowPassword((v) => !v)}
+                style={{ padding: 10 }}
+              >
+                <Ionicons
+                  name={showPassword ? "eye-off" : "eye"}
+                  size={22}
+                  color="#999"
+                />
+              </TouchableOpacity>
+            </View>
 
-        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-          <IconSymbol size={24} name="arrow.right.circle.fill" color="#FFFFFF" />
-          <ThemedText style={styles.loginButtonText}>Iniciar Sesión</ThemedText>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.forgotPasswordButton}>
-          <ThemedText style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</ThemedText>
-        </TouchableOpacity>
-      </ThemedView>
-
-      <View style={styles.footer}>
-        <ThemedText style={styles.footerText}>
-          ¿No tienes una cuenta?{" "}
-          <Link href="/registrousuario" asChild>
-            <TouchableOpacity>
-              <Text style={styles.registerText}>Regístrate aquí</Text>
+            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+              <IconSymbol size={24} name="arrow.right.circle.fill" color="#FFFFFF" />
+              <ThemedText style={styles.loginButtonText}>Iniciar Sesión</ThemedText>
             </TouchableOpacity>
-          </Link>
-        </ThemedText>
-      </View>
-    </View>
+
+            <TouchableOpacity style={styles.forgotPasswordButton}>
+              <ThemedText style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</ThemedText>
+            </TouchableOpacity>
+          </ThemedView>
+
+          <View style={styles.footer}>
+            <ThemedText style={styles.footerText}>
+              ¿No tienes una cuenta?{" "}
+              <Link href="/registrousuario" asChild>
+                <TouchableOpacity>
+                  <Text style={styles.registerText}>Regístrate aquí</Text>
+                </TouchableOpacity>
+              </Link>
+            </ThemedText>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
-
 
 
 
@@ -210,11 +232,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   footer: {
-    position: 'absolute',
-    bottom: 30,
-    left: 0,
-    right: 0,
     alignItems: 'center',
+    marginTop: 30,
+    marginBottom: 10,
   },
   footerText: {
     fontSize: 16,

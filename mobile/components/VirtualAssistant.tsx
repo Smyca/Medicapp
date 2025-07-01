@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, KeyboardAvoidingView, Platform } from 'react-native';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as ImagePicker from 'expo-image-picker';
@@ -12,6 +12,7 @@ export default function VirtualAssistant() {
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState<string | null>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const handleSendMessage = async () => {
     if ((inputText.trim() === '' && !image) || loading) return;
@@ -31,7 +32,6 @@ export default function VirtualAssistant() {
         })),
       ];
 
-      // Si hay imagen, conviértela a base64 y agrégala al mensaje
       if (image) {
         const base64 = await FileSystem.readAsStringAsync(image, { encoding: FileSystem.EncodingType.Base64 });
         contents.push({
@@ -62,6 +62,10 @@ export default function VirtualAssistant() {
     setInputText('');
     setImage(null);
     setLoading(false);
+
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
   };
 
   const handlePickImage = async () => {
@@ -81,16 +85,29 @@ export default function VirtualAssistant() {
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={0} // Ajusta si tienes header fijo, por ejemplo 80
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 60}
     >
       <View style={styles.container}>
-        <View style={styles.disclaimerContainer}>
-          <Text style={styles.disclaimerText}>
-            La información proporcionada por esta IA es orientativa y podría no ser completamente precisa o actualizada. No debe considerarse una fuente totalmente confiable ni reemplaza el asesoramiento profesional.
-          </Text>
-        </View>
+        <ScrollView
+          style={{ flex: 1 }}
+          ref={scrollViewRef}
+          contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end', paddingBottom: 16 }}
+          onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Título y disclaimer SOLO al principio */}
+          {messages.length === 0 && (
+            <View style={styles.headerContainer}>
+              <Text style={styles.title}>Asistente Inteligente</Text>
+              <Text style={styles.subtitle}>
+                Tu asistente virtual con IA. ¡Hazme cualquier pregunta !
+              </Text>
+              <Text style={styles.disclaimerText}>
+                La información proporcionada por esta IA es orientativa y podría no ser completamente precisa o actualizada. No debe considerarse una fuente totalmente confiable ni reemplaza el asesoramiento profesional.
+              </Text>
+            </View>
+          )}
 
-        <ScrollView style={styles.messagesContainer}>
           {messages.map((message, index) => (
             <View
               key={index}
@@ -120,6 +137,7 @@ export default function VirtualAssistant() {
           </View>
         )}
 
+        {/* Input SIEMPRE visible arriba del teclado */}
         <View style={styles.inputContainer}>
           <TouchableOpacity style={styles.imageButton} onPress={handlePickImage}>
             <Ionicons name="add" size={24} color="#2196F3" />
@@ -130,6 +148,8 @@ export default function VirtualAssistant() {
             onChangeText={setInputText}
             placeholder="Escribe tu pregunta aquí..."
             placeholderTextColor="#666"
+            onSubmitEditing={handleSendMessage}
+            returnKeyType="send"
           />
           <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
             <Ionicons name="send" size={24} color="white" />
@@ -147,17 +167,31 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     marginTop: 0,
   },
-  disclaimerContainer: {
-    backgroundColor: '#23272f',
-    borderRadius: 10,
-    padding: 10,
-    margin: 12,
-    marginBottom: 0,
+  headerContainer: {
+    marginTop: 32,
+    marginBottom: 18,
+    alignItems: 'center',
+    paddingHorizontal: 12,
+  },
+  title: {
+    color: '#FFD93D',
+    fontSize: 26,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  subtitle: {
+    color: '#ccc',
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 8,
   },
   disclaimerText: {
     color: '#FFD93D',
     fontSize: 13,
     textAlign: 'center',
+    marginBottom: 8,
+    marginTop: 8,
   },
   messagesContainer: {
     flex: 1,
@@ -170,11 +204,11 @@ const styles = StyleSheet.create({
     maxWidth: '80%',
   },
   userMessage: {
-    backgroundColor: '#1976D2', // Azul no muy oscuro
+    backgroundColor: '#1976D2',
     alignSelf: 'flex-end',
   },
   assistantMessage: {
-    backgroundColor: '#23272f', // Gris oscuro
+    backgroundColor: '#23272f',
     alignSelf: 'flex-start',
   },
   messageText: {

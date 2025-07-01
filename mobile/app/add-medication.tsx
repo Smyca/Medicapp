@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Platform, ScrollView, StyleSheet, Switch, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, TextInput, TouchableOpacity, View } from 'react-native';
 import { API_URL } from '@env';
 import DateTimePicker from '@react-native-community/datetimepicker';
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) =>
@@ -124,187 +124,192 @@ export default function AddMedicationScreen() {
   }, []);
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#181A20' }}>
-      {}
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 70, marginBottom: 10, justifyContent: 'center' }}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.squareBackBtn}
-          accessibilityLabel="Volver"
-        >
-          <ThemedText style={{ color: '#fff', fontSize: 28, fontWeight: 'bold', marginTop: -2 }}>&lt;</ThemedText>
-        </TouchableOpacity>
-        <ThemedText
-          type="title"
-          style={[styles.title, { textAlign: 'left', marginLeft: 12 }]}
-        >
-          Agregar Medicamento
-        </ThemedText>
-      </View>
-      <ScrollView contentContainerStyle={{ paddingTop: 10, paddingBottom: 30 }}>
-        <ThemedView style={styles.form}>
-          <View style={styles.inputGroup}>
-            <ThemedText style={styles.label}>Nombre del Medicamento *</ThemedText>
-            <TextInput
-              style={styles.input}
-              value={medication.name}
-              onChangeText={(text) => {
-             
-                const clean = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
-                if (clean.length <= 30) setMedication({ ...medication, name: clean });
-              }}
-              placeholder="Ej: Paracetamol"
-              placeholderTextColor="#aaa"
-              autoFocus
-              maxLength={30}
-            />
-          </View>
-          <View style={styles.inputGroup}>
-            <ThemedText style={styles.label}>Dosis *</ThemedText>
-            <TextInput
-              style={styles.input}
-              value={medication.dosage}
-              onChangeText={(text) => {
-             
-                const clean = text.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
-                if (clean.length <= 15) setMedication({ ...medication, dosage: clean });
-              }}
-              placeholder="Ej: 2 comprimidos de 500mg"
-              placeholderTextColor="#aaa"
-              maxLength={15}
-            />
-          </View>
-          <View style={styles.inputGroup}>
-            <ThemedText style={styles.label}>Frecuencia *</ThemedText>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
-              <ThemedText style={{ fontSize: 18, color: '#A9A9A9' }}>Cada </ThemedText>
-              <TextInput
-                style={[styles.input, { width: 60, marginRight: 8, marginLeft: 4, textAlign: 'center' }]}
-                value={medication.frequency}
-                onChangeText={text => {
-
-                  let numeric = text.replace(/\D/g, '').slice(0, 2);
-                  if (numeric) {
-                    let num = parseInt(numeric, 10);
-                    if (num < 1) numeric = '1';
-                    else if (num > 24) numeric = '24';
-                    else numeric = num.toString();
-                  }
-                  setMedication({ ...medication, frequency: numeric });
-                }}
-                placeholder="8"
-                placeholderTextColor="#aaa"
-                keyboardType="numeric"
-                maxLength={2}
-              />
-              <ThemedText style={{ fontSize: 18, color: '#A9A9A9' }}>horas</ThemedText>
-            </View>
-          </View>
-          <View style={styles.inputGroup}>
-            <ThemedText style={styles.label}>Hora *</ThemedText>
-            <TouchableOpacity
-              style={[
-                styles.input,
-                {
-                  width: 200,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  alignSelf: 'center',
-                  paddingVertical: 15,
-                },
-              ]}
-              onPress={() => setShowTimePicker(true)}
-            >
-              <ThemedText style={{ color: '#fff', fontSize: 25, letterSpacing: 2 }}>
-                {medication.time ? medication.time.slice(0, 5) : 'Seleccionar'}
-              </ThemedText>
-            </TouchableOpacity>
-            {showTimePicker && (
-              <DateTimePicker
-                value={
-                  medication.time
-                    ? (() => {
-                        const [h, m] = medication.time.split(':').map(Number);
-                        const now = new Date();
-                        now.setHours(h);
-                        now.setMinutes(m);
-                        now.setSeconds(0);
-                        now.setMilliseconds(0);
-                        return now;
-                      })()
-                    : new Date()
-                }
-                mode="time"
-                is24Hour={true}
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                onChange={(event, selectedDate) => {
-                  if (Platform.OS === 'android') {
-                    if (event.type === 'set' && selectedDate) {
-                      const hours = selectedDate.getHours().toString().padStart(2, '0');
-                      const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
-                      setMedication({ ...medication, time: `${hours}:${minutes}` });
-                    }
-                    setShowTimePicker(false);
-                  } else {
-                    if (selectedDate) {
-                      const hours = selectedDate.getHours().toString().padStart(2, '0');
-                      const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
-                      setMedication({ ...medication, time: `${hours}:${minutes}` });
-                    }
-                    // No cerrar aquí, el usuario debe cerrar el modal manualmente
-                  }
-                }}
-                style={{ backgroundColor: '#181A20' }}
-              />
-            )}
-            {Platform.OS === 'ios' && showTimePicker && (
-              <TouchableOpacity
-                style={{
-                  backgroundColor: '#1976D2',
-                  padding: 12,
-                  borderRadius: 8,
-                  alignItems: 'center',
-                  marginTop: 10,
-                }}
-                onPress={() => setShowTimePicker(false)}
-              >
-                <ThemedText style={{ color: '#fff', fontWeight: 'bold' }}>Aceptar</ThemedText>
-              </TouchableOpacity>
-            )}
-          </View>
-          <View style={styles.inputGroup}>
-            <ThemedText style={styles.label}>¿Activar recordatorio?</ThemedText>
-            <Switch
-              value={reminder}
-              onValueChange={setReminder}
-              thumbColor={reminder ? '#1976D2' : '#ccc'}
-              trackColor={{ false: '#bbb', true: '#90caf9' }}
-            />
-          </View>
-          <View style={styles.inputGroup}>
-            <ThemedText style={styles.label}>Notas Adicionales</ThemedText>
-            <TextInput
-              style={[styles.input, styles.notesInput]}
-              value={medication.notes}
-              onChangeText={(text) => {
-                // Letras, números y espacios
-                const clean = text.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
-                if (clean.length <= 100) setMedication({ ...medication, notes: clean });
-              }}
-              placeholder="Ej: Tomar después de las comidas"
-              placeholderTextColor="#aaa"
-              multiline
-              numberOfLines={4}
-              maxLength={100}
-            />
-          </View>
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave} accessibilityLabel="Guardar Medicamento">
-            <IconSymbol size={28} name="checkmark.circle.fill" color="#FFFFFF" />
-            <ThemedText style={styles.saveButtonText}>Guardar Medicamento</ThemedText>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={60}
+    >
+      <View style={{ flex: 1, backgroundColor: '#181A20' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 70, marginBottom: 10, justifyContent: 'center' }}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.squareBackBtn}
+            accessibilityLabel="Volver"
+          >
+            <ThemedText style={{ color: '#fff', fontSize: 28, fontWeight: 'bold', marginTop: -2 }}>&lt;</ThemedText>
           </TouchableOpacity>
-        </ThemedView>
-      </ScrollView>
-    </View>
+          <ThemedText
+            type="title"
+            style={[styles.title, { textAlign: 'left', marginLeft: 12 }]}
+          >
+            Agregar Medicamento
+          </ThemedText>
+        </View>
+        <ScrollView contentContainerStyle={{ paddingTop: 10, paddingBottom: 30 }}>
+          <ThemedView style={styles.form}>
+            <View style={styles.inputGroup}>
+              <ThemedText style={styles.label}>Nombre del Medicamento *</ThemedText>
+              <TextInput
+                style={styles.input}
+                value={medication.name}
+                onChangeText={(text) => {
+               
+                  const clean = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+                  if (clean.length <= 30) setMedication({ ...medication, name: clean });
+                }}
+                placeholder="Ej: Paracetamol"
+                placeholderTextColor="#aaa"
+                autoFocus
+                maxLength={30}
+              />
+            </View>
+            <View style={styles.inputGroup}>
+              <ThemedText style={styles.label}>Dosis *</ThemedText>
+              <TextInput
+                style={styles.input}
+                value={medication.dosage}
+                onChangeText={(text) => {
+               
+                  const clean = text.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+                  if (clean.length <= 15) setMedication({ ...medication, dosage: clean });
+                }}
+                placeholder="Ej: 2 comprimidos de 500mg"
+                placeholderTextColor="#aaa"
+                maxLength={15}
+              />
+            </View>
+            <View style={styles.inputGroup}>
+              <ThemedText style={styles.label}>Frecuencia *</ThemedText>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>
+                <ThemedText style={{ fontSize: 18, color: '#A9A9A9' }}>Cada </ThemedText>
+                <TextInput
+                  style={[styles.input, { width: 60, marginRight: 8, marginLeft: 4, textAlign: 'center' }]}
+                  value={medication.frequency}
+                  onChangeText={text => {
+
+                    let numeric = text.replace(/\D/g, '').slice(0, 2);
+                    if (numeric) {
+                      let num = parseInt(numeric, 10);
+                      if (num < 1) numeric = '1';
+                      else if (num > 24) numeric = '24';
+                      else numeric = num.toString();
+                    }
+                    setMedication({ ...medication, frequency: numeric });
+                  }}
+                  placeholder="8"
+                  placeholderTextColor="#aaa"
+                  keyboardType="numeric"
+                  maxLength={2}
+                />
+                <ThemedText style={{ fontSize: 18, color: '#A9A9A9' }}>horas</ThemedText>
+              </View>
+            </View>
+            <View style={styles.inputGroup}>
+              <ThemedText style={styles.label}>Hora *</ThemedText>
+              <TouchableOpacity
+                style={[
+                  styles.input,
+                  {
+                    width: 200,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    alignSelf: 'center',
+                    paddingVertical: 15,
+                  },
+                ]}
+                onPress={() => setShowTimePicker(true)}
+              >
+                <ThemedText style={{ color: '#fff', fontSize: 25, letterSpacing: 2 }}>
+                  {medication.time ? medication.time.slice(0, 5) : 'Seleccionar'}
+                </ThemedText>
+              </TouchableOpacity>
+              {showTimePicker && (
+                <DateTimePicker
+                  value={
+                    medication.time
+                      ? (() => {
+                          const [h, m] = medication.time.split(':').map(Number);
+                          const now = new Date();
+                          now.setHours(h);
+                          now.setMinutes(m);
+                          now.setSeconds(0);
+                          now.setMilliseconds(0);
+                          return now;
+                        })()
+                      : new Date()
+                  }
+                  mode="time"
+                  is24Hour={true}
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={(event, selectedDate) => {
+                    if (Platform.OS === 'android') {
+                      if (event.type === 'set' && selectedDate) {
+                        const hours = selectedDate.getHours().toString().padStart(2, '0');
+                        const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
+                        setMedication({ ...medication, time: `${hours}:${minutes}` });
+                      }
+                      setShowTimePicker(false);
+                    } else {
+                      if (selectedDate) {
+                        const hours = selectedDate.getHours().toString().padStart(2, '0');
+                        const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
+                        setMedication({ ...medication, time: `${hours}:${minutes}` });
+                      }
+                      // No cerrar aquí, el usuario debe cerrar el modal manualmente
+                    }
+                  }}
+                  style={{ backgroundColor: '#181A20' }}
+                />
+              )}
+              {Platform.OS === 'ios' && showTimePicker && (
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: '#1976D2',
+                    padding: 12,
+                    borderRadius: 8,
+                    alignItems: 'center',
+                    marginTop: 10,
+                  }}
+                  onPress={() => setShowTimePicker(false)}
+                >
+                  <ThemedText style={{ color: '#fff', fontWeight: 'bold' }}>Aceptar</ThemedText>
+                </TouchableOpacity>
+              )}
+            </View>
+            <View style={styles.inputGroup}>
+              <ThemedText style={styles.label}>¿Activar recordatorio?</ThemedText>
+              <Switch
+                value={reminder}
+                onValueChange={setReminder}
+                thumbColor={reminder ? '#1976D2' : '#ccc'}
+                trackColor={{ false: '#bbb', true: '#90caf9' }}
+              />
+            </View>
+            <View style={styles.inputGroup}>
+              <ThemedText style={styles.label}>Notas Adicionales</ThemedText>
+              <TextInput
+                style={[styles.input, styles.notesInput]}
+                value={medication.notes}
+                onChangeText={(text) => {
+                  // Letras, números y espacios
+                  const clean = text.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+                  if (clean.length <= 100) setMedication({ ...medication, notes: clean });
+                }}
+                placeholder="Ej: Tomar después de las comidas"
+                placeholderTextColor="#aaa"
+                multiline
+                numberOfLines={4}
+                maxLength={100}
+              />
+            </View>
+            <TouchableOpacity style={styles.saveButton} onPress={handleSave} accessibilityLabel="Guardar Medicamento">
+              <IconSymbol size={28} name="checkmark.circle.fill" color="#FFFFFF" />
+              <ThemedText style={styles.saveButtonText}>Guardar Medicamento</ThemedText>
+            </TouchableOpacity>
+          </ThemedView>
+        </ScrollView>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 

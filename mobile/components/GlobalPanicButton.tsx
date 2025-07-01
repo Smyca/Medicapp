@@ -3,6 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import React, { useEffect, useState, useRef } from 'react';
 import { Alert, StyleSheet, TouchableOpacity, View, Modal, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import ShakeListener from './ShakeListener';
 
 const PANIC_BAR_HEIGHT = 60;
 
@@ -43,15 +45,15 @@ export default function GlobalPanicButton() {
     }
   };
 
-  const callEmergencyContacts = async (contacts) => {
-    for (const contact of contacts.slice(0, 2)) { // Solo los dos primeros
+  const callEmergencyContacts = async (emergencycontacts) => {
+    for (const contact of emergencycontacts.slice(0, 2)) { // Solo los dos primeros
       try {
         await fetch('https://abcd1234.ngrok.io/panic-call', { // Usa aquí tu URL pública de ngrok
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ to: contact.phone }),
         });
-      } catch (error) {
+      } catch (error) {+-
         console.error('Error llamando a contacto:', contact.phone, error);
       }
     }
@@ -90,46 +92,58 @@ export default function GlobalPanicButton() {
   }
 
   return (
-    <View pointerEvents="box-none" style={styles.absoluteContainer}>
-      <TouchableOpacity
-        style={styles.panicBar}
-        onPress={handlePanicButton}
-        activeOpacity={0.85}
-      >
-        <Ionicons name="alert-circle" size={32} color="white" style={styles.icon} />
-      </TouchableOpacity>
-      <Modal
-        visible={showModal}
-        transparent
-        animationType="fade"
-        onRequestClose={handleCancel}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>¡Activaste el botón de pánico!</Text>
-            <Text style={styles.modalText}>
-              Estás en problemas?
-            </Text>
-            <Text style={styles.modalTimer}>{timer}s</Text>
-            <Text style={styles.modalSubText}>
-              Esto llamará a tus contactos de emergencia.
-            </Text>
-            <View style={styles.modalButtons}>
-              <TouchableOpacity style={styles.modalBtnYes} onPress={handleConfirm}>
-                <Text style={styles.modalBtnText}>Sí</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.modalBtnNo} onPress={handleCancel}>
-                <Text style={styles.modalBtnText}>No</Text>
-              </TouchableOpacity>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <View style={styles.absoluteContainer}>
+        {/* ShakeListener activa el botón de pánico al agitar */}
+        <ShakeListener onShake={handlePanicButton} />
+
+        <TouchableOpacity
+          style={styles.panicBar}
+          onPress={handlePanicButton}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="alert-circle" size={32} color="white" style={styles.icon} />
+        </TouchableOpacity>
+        <Modal
+          visible={showModal}
+          transparent
+          animationType="fade"
+          onRequestClose={handleCancel}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>¡Activaste el botón de pánico!</Text>
+              <Text style={styles.modalText}>
+                Estás en problemas?
+              </Text>
+              <Text style={styles.modalTimer}>{timer}s</Text>
+              <Text style={styles.modalSubText}>
+                Esto llamará a tus contactos de emergencia.
+              </Text>
+              <View style={styles.modalButtons}>
+                <TouchableOpacity style={styles.modalBtnYes} onPress={handleConfirm}>
+                  <Text style={styles.modalBtnText}>Sí</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.modalBtnNo} onPress={handleCancel}>
+                  <Text style={styles.modalBtnText}>No</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
-    </View>
+        </Modal>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    zIndex: 1000,
+  },
   absoluteContainer: {
     position: 'absolute',
     top: 0,

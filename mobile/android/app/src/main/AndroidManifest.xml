@@ -29,6 +29,7 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="medicapp"/>
+        <data android:scheme="exp+medicapp"/>
       </intent-filter>
     </activity>
   </application>
