@@ -1,6 +1,5 @@
 "use client";
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AppSidebar } from "@/components/app-sidebar2";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -157,7 +156,146 @@ export default function DatosPage() {
   const [filtroNombre, setFiltroNombre] = useState("");
   const [filtroCorreo, setFiltroCorreo] = useState("");
   const [filtroTipoSangre, setFiltroTipoSangre] = useState("");
-  const [datos, setDatos] = useState(datosIniciales);
+  const [datos, setDatos] = useState<any[]>([]);
+
+  // Nuevo: Cargar datos desde el endpoint al montar el componente
+  useEffect(() => {
+    // Solo genera los datos iniciales en el cliente
+    setDatos([
+      {
+        nombre: "Juan Pérez",
+        correo: "juan@example.com",
+        edad: 32,
+        tipoSangre: "O+",
+        alergias: "Ninguna",
+        medicamentoImportante: "Losartán",
+        contacto1: "María Pérez - 555-1234",
+        contacto2: "Carlos Pérez - 555-5678",
+        direccion: "Calle Falsa 123, Ciudad",
+        creacion: fechaAleatoria(),
+      },
+      {
+        nombre: "Ana Gómez",
+        correo: "ana@example.com",
+        edad: 28,
+        tipoSangre: "A-",
+        alergias: "Penicilina",
+        medicamentoImportante: "Ibuprofeno",
+        contacto1: "Luis Gómez - 555-8765",
+        contacto2: "Sofía Gómez - 555-4321",
+        direccion: "Av. Siempre Viva 742, Ciudad",
+        creacion: fechaAleatoria(),
+      },
+      {
+        nombre: "Carlos Ruiz",
+        correo: "carlos@example.com",
+        edad: 45,
+        tipoSangre: "B+",
+        alergias: "Ninguna",
+        medicamentoImportante: "Metformina",
+        contacto1: "Laura Ruiz - 555-1111",
+        contacto2: "Pedro Ruiz - 555-2222",
+        direccion: "Calle Luna 456, Ciudad",
+        creacion: fechaAleatoria(),
+      },
+      {
+        nombre: "María López",
+        correo: "maria@example.com",
+        edad: 36,
+        tipoSangre: "AB+",
+        alergias: "Aspirina",
+        medicamentoImportante: "Salbutamol",
+        contacto1: "José López - 555-3333",
+        contacto2: "Elena López - 555-4444",
+        direccion: "Calle Sol 789, Ciudad",
+        creacion: fechaAleatoria(),
+      },
+      {
+        nombre: "Pedro Sánchez",
+        correo: "pedro@example.com",
+        edad: 52,
+        tipoSangre: "O-",
+        alergias: "Ninguna",
+        medicamentoImportante: "Enalapril",
+        contacto1: "Marta Sánchez - 555-5555",
+        contacto2: "Luis Sánchez - 555-6666",
+        direccion: "Av. Central 101, Ciudad",
+        creacion: fechaAleatoria(),
+      },
+      {
+        nombre: "Lucía Torres",
+        correo: "lucia@example.com",
+        edad: 29,
+        tipoSangre: "A+",
+        alergias: "Gluten",
+        medicamentoImportante: "Paracetamol",
+        contacto1: "Carlos Torres - 555-7777",
+        contacto2: "Ana Torres - 555-8888",
+        direccion: "Calle Norte 202, Ciudad",
+        creacion: fechaAleatoria(),
+      },
+      {
+        nombre: "Miguel Díaz",
+        correo: "miguel@example.com",
+        edad: 41,
+        tipoSangre: "B-",
+        alergias: "Ninguna",
+        medicamentoImportante: "Atorvastatina",
+        contacto1: "Paula Díaz - 555-9999",
+        contacto2: "Sara Díaz - 555-0000",
+        direccion: "Av. Sur 303, Ciudad",
+        creacion: fechaAleatoria(),
+      },
+      {
+        nombre: "Sofía Ramírez",
+        correo: "sofia@example.com",
+        edad: 34,
+        tipoSangre: "AB-",
+        alergias: "Lácteos",
+        medicamentoImportante: "Loratadina",
+        contacto1: "Javier Ramírez - 555-1212",
+        contacto2: "Carmen Ramírez - 555-3434",
+        direccion: "Calle Este 404, Ciudad",
+        creacion: fechaAleatoria(),
+      },
+      {
+        nombre: "Diego Herrera",
+        correo: "diego@example.com",
+        edad: 38,
+        tipoSangre: "O+",
+        alergias: "Ninguna",
+        medicamentoImportante: "Levotiroxina",
+        contacto1: "Patricia Herrera - 555-5656",
+        contacto2: "Alberto Herrera - 555-7878",
+        direccion: "Av. Oeste 505, Ciudad",
+        creacion: fechaAleatoria(),
+      },
+      {
+        nombre: "Valentina Castro",
+        correo: "valentina@example.com",
+        edad: 27,
+        tipoSangre: "A-",
+        alergias: "Mariscos",
+        medicamentoImportante: "Epinefrina",
+        contacto1: "Gabriel Castro - 555-9090",
+        contacto2: "Isabel Castro - 555-2323",
+        direccion: "Calle Sur 606, Ciudad",
+        creacion: fechaAleatoria(),
+      },
+      {
+        nombre: "Andrés Molina",
+        correo: "andres@example.com",
+        edad: 50,
+        tipoSangre: "B+",
+        alergias: "Ninguna",
+        medicamentoImportante: "Ibuprofeno",
+        contacto1: "Rosa Molina - 555-4545",
+        contacto2: "Mario Molina - 555-6767",
+        direccion: "Av. Norte 707, Ciudad",
+        creacion: fechaAleatoria(),
+      },
+    ]);
+  }, []);
 
   const [seleccionados, setSeleccionados] = useState<string[]>([]);
   const todosSeleccionados =
@@ -285,6 +423,7 @@ export default function DatosPage() {
                   </th>
                   <th className="px-2 py-1 border">Nombre</th>
                   <th className="px-2 py-1 border">Correo</th>
+                  <th className="px-2 py-1 border">Correo electrónico</th> {}
                   <th className="px-2 py-1 border">Edad</th>
                   <th className="px-2 py-1 border">Tipo de Sangre</th>
                   <th className="px-2 py-1 border">Alergias</th>
@@ -299,7 +438,7 @@ export default function DatosPage() {
               <tbody>
                 {datosFiltrados().length === 0 ? (
                   <tr>
-                    <td colSpan={12} className="text-center py-4 text-muted-foreground">
+                    <td colSpan={13} className="text-center py-4 text-muted-foreground">
                       No se encontraron resultados.
                     </td>
                   </tr>
@@ -315,6 +454,7 @@ export default function DatosPage() {
                         />
                       </td>
                       <td className="px-2 py-1 border">{dato.nombre}</td>
+                      <td className="px-2 py-1 border">{dato.correo}</td>
                       <td className="px-2 py-1 border">{dato.correo}</td>
                       <td className="px-2 py-1 border">{dato.edad}</td>
                       <td className="px-2 py-1 border">{dato.tipoSangre}</td>

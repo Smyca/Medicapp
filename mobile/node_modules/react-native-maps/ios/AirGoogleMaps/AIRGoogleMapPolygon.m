@@ -9,7 +9,6 @@
 #import "AIRGoogleMapPolygon.h"
 #import "AIRGMSPolygon.h"
 #import <GoogleMaps/GoogleMaps.h>
-#import "AIRGoogleMap.h"
 
 @implementation AIRGoogleMapPolygon
 {
@@ -42,37 +41,8 @@
     _polygon.strokeWidth = _strokeWidth;
   }
 }
-- (void) didInsertInMap:(AIRGoogleMap *) map
-{
-    _polygon = [AIRGMSPolygon new];
 
-    if (_identifier){
-        [_polygon setIdentifier:_identifier];
-    }
-
-    [_polygon setTappable:_tappable];
-    if (_strokeColor){
-        _polygon.strokeColor = _strokeColor;
-    }
-    if (_fillColor){
-        _polygon.fillColor = _fillColor;
-    }
-    if (_strokeWidth){
-        _polygon.strokeWidth = _strokeWidth;
-    }
-    if (_coordinates){
-        [self setCoordinates:_coordinates];
-    }
-    if (_holes){
-        [self setHoles:_holes];
-    }
-    if (_zIndex){
-        _polygon.zIndex = _zIndex;
-    }
-    [_polygon setMap:map];
-}
-
-- (void)setCoordinates:(NSArray<AIRGoogleMapCoordinate *> *)coordinates
+- (void)setCoordinates:(NSArray<AIRMapCoordinate *> *)coordinates
 {
   _coordinates = coordinates;
 
@@ -85,7 +55,7 @@
   _polygon.path = path;
 }
 
-- (void)setHoles:(NSArray<NSArray<AIRGoogleMapCoordinate *> *> *)holes
+- (void)setHoles:(NSArray<NSArray<AIRMapCoordinate *> *> *)holes
 {
   _holes = holes;
 

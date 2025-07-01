@@ -8,6 +8,8 @@ import { useEffect, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, TextInput, TouchableOpacity, View } from 'react-native';
 import { API_URL } from '@env';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { scheduleMedicationNotifications, setupNotificationChannel } from '@/components/NotificationScheduler';
+
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) =>
   `${i.toString().padStart(2, '0')}:00`
 );
@@ -73,13 +75,21 @@ export default function AddMedicationScreen() {
       }
       if (reminder) {
         await Notifications.requestPermissionsAsync();
-        await Notifications.cancelAllScheduledNotificationsAsync();
-
         const [startHour, startMinute] = medication.time.split(':').map(Number);
         const intervalHours = Number(medication.frequency) || 24;
+        const now = new Date();
 
         for (let i = 0; i < 24; i += intervalHours) {
-          const hour = (startHour + i) % 24;
+          const notifHour = (startHour + i) % 24;
+
+          // Calcula la próxima ocurrencia de esta hora/minuto
+          let firstDate = new Date();
+          firstDate.setHours(notifHour, startMinute, 0, 0);
+          if (firstDate <= now) {
+            firstDate.setDate(firstDate.getDate() + 1);
+          }
+
+          // Notificación única (no repetitiva) - usa el trigger recomendado
           await Notifications.scheduleNotificationAsync({
             content: {
               title: 'Recordatorio de medicamento',
@@ -87,8 +97,20 @@ export default function AddMedicationScreen() {
               sound: 'default',
             },
             trigger: {
-              channelId: 'medicamentos',
-              hour,
+              type: 'date',
+              date: firstDate,
+            },
+          });
+
+          // Notificación repetitiva para los siguientes días
+          await Notifications.scheduleNotificationAsync({
+            content: {
+              title: 'Recordatorio de medicamento',
+              body: `Es hora de tomar: ${medication.name}`,
+              sound: 'default',
+            },
+            trigger: {
+              hour: notifHour,
               minute: startMinute,
               repeats: true,
             },
@@ -105,22 +127,13 @@ export default function AddMedicationScreen() {
   useEffect(() => {
     Notifications.setNotificationHandler({
       handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: false,
         shouldShowBanner: true,
         shouldShowList: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
       }),
     });
-   
-    Notifications.getPermissionsAsync();
-    if (Platform.OS === 'android') {
-      Notifications.setNotificationChannelAsync('medicamentos', {
-        name: 'Medicamentos',
-        importance: Notifications.AndroidImportance.HIGH,
-        sound: 'default',
-      });
-    }
+    setupNotificationChannel();
   }, []);
 
   return (
@@ -175,7 +188,7 @@ export default function AddMedicationScreen() {
                 }}
                 placeholder="Ej: 2 comprimidos de 500mg"
                 placeholderTextColor="#aaa"
-                maxLength={15}
+                maxLength={30}
               />
             </View>
             <View style={styles.inputGroup}>

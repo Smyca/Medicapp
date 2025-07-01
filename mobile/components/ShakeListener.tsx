@@ -6,7 +6,7 @@ interface ShakeListenerProps {
   threshold?: number; // Sensibilidad, por defecto 1.4
 }
 
-export default function ShakeListener({ onShake, threshold = 15.0 }: ShakeListenerProps) {
+export default function ShakeListener({ onShake, threshold = 10.0 }: ShakeListenerProps) {
   const last = useRef({ x: 0, y: 0, z: 0 });
   const lastShake = useRef(Date.now());
 

@@ -9,14 +9,8 @@ import MapView from 'react-native-maps';
 import { ThemedText } from './ThemedText';
 import { ThemedView } from './ThemedView';
 
-// Reemplaza esto con tu API key de LocationIQ
-const LOCATIONIQ_API_KEY = 'pk.a412cbb8e12710f18b8b307bb8a5ce18';
-
-// Coordenadas del Duoc UC Mall Plaza Oeste
-const DUOC_UC_COORDS = {
-  latitude: -33.4513,
-  longitude: -70.7004
-};
+// Usa tu API key de LocationIQ
+const LOCATIONIQ_API_KEY = 'pk.93f873f8ec7db86a1ced4b94efa0168b';
 
 interface NearbyPlace {
   name: string;
@@ -31,57 +25,6 @@ interface NearbyPlace {
   openNow?: boolean;
   photos?: string[];
 }
-
-const PLACES_EXAMPLE: NearbyPlace[] = [
-  {
-    name: 'Hospital El Carmen Dr. Luis Valentín Ferrada',
-    distance: '1.2 km',
-    phone: '+56 2 2575 7000',
-    lat: -33.4542,
-    lng: -70.7045,
-    address: 'Av. Lo Espejo 1051, Cerrillos, Región Metropolitana',
-    type: 'hospital',
-    description: 'Hospital público de alta complejidad',
-    rating: 4.2,
-    openNow: true
-  },
-  {
-    name: 'Farmacia Cruz Verde Mall Plaza Oeste',
-    distance: '0.3 km',
-    phone: '+56 600 818 9000',
-    lat: -33.4507,
-    lng: -70.7015,
-    address: 'Av. Américo Vespucio 1501, Cerrillos, Región Metropolitana',
-    type: 'pharmacy',
-    description: 'Farmacia dentro del Mall Plaza Oeste',
-    rating: 4.0,
-    openNow: true
-  },
-  {
-    name: 'Clínica RedSalud Santiago',
-    distance: '2.5 km',
-    phone: '+56 2 2914 6000',
-    lat: -33.4565,
-    lng: -70.6889,
-    address: 'Av. Ecuador 3769, Estación Central, Región Metropolitana',
-    type: 'clinic',
-    description: 'Clínica privada de atención integral',
-    rating: 4.1,
-    openNow: true
-  },
-  {
-    name: 'Mall Plaza Oeste',
-    distance: '0.1 km',
-    phone: '+56 2 2574 8000',
-    lat: -33.4505,
-    lng: -70.7010,
-    address: 'Av. Américo Vespucio 1501, Cerrillos, Región Metropolitana',
-    type: 'landmark',
-    description: 'Centro comercial con tiendas, cine y restaurantes',
-    rating: 4.5,
-    openNow: true
-  }
-];
 
 export function GPSTab() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
@@ -104,38 +47,17 @@ export function GPSTab() {
         return;
       }
 
-      try {
-        // Usar ubicación fija cerca del Duoc UC
-        const initialLocation = {
-          coords: {
-            latitude: DUOC_UC_COORDS.latitude,
-            longitude: DUOC_UC_COORDS.longitude,
-            altitude: null,
-            accuracy: 5,
-            altitudeAccuracy: null,
-            heading: null,
-            speed: null
-          },
-          timestamp: Date.now()
-        };
-        
-        await updateLocation(initialLocation);
-
-        // Configurar actualización en tiempo real
-        locationSubscription.current = await Location.watchPositionAsync(
-          {
-            accuracy: Location.Accuracy.High,
-            timeInterval: 5000,
-            distanceInterval: 10,
-          },
-          async (newLocation) => {
-            await updateLocation(newLocation);
-          }
-        );
-      } catch (error) {
-        setErrorMsg('Error al obtener la ubicación');
-      }
-      setLoading(false);
+      // Ubicación en tiempo real
+      locationSubscription.current = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.High,
+          timeInterval: 5000,
+          distanceInterval: 10,
+        },
+        async (newLocation) => {
+          await updateLocation(newLocation);
+        }
+      );
     })();
 
     // Obtener el nombre del usuario desde AsyncStorage
@@ -153,14 +75,14 @@ export function GPSTab() {
 
     return () => {
       if (locationSubscription.current) {
-        // locationSubscription.current.remove();
+        locationSubscription.current.remove();
       }
     };
   }, []);
 
   const updateLocation = async (newLocation: Location.LocationObject) => {
     setLocation(newLocation);
-    
+
     try {
       const geo = await Location.reverseGeocodeAsync({
         latitude: newLocation.coords.latitude,
@@ -171,7 +93,7 @@ export function GPSTab() {
         const g = geo[0];
         const dir = `${g.street ? g.street + ' ' : ''}${g.name ? g.name + ', ' : ''}${g.district ? g.district + ', ' : ''}${g.city ? g.city + ', ' : ''}${g.region ? g.region + ', ' : ''}${g.country ? g.country : ''}`;
         setAddress(dir);
-        
+
         // Animar el mapa a la nueva ubicación
         mapRef.current?.animateToRegion({
           latitude: newLocation.coords.latitude,
@@ -179,7 +101,7 @@ export function GPSTab() {
           latitudeDelta: 0.01,
           longitudeDelta: 0.01,
         }, 1000);
-        
+
         await analyzeSurroundings(newLocation.coords.latitude, newLocation.coords.longitude);
       } else {
         setAddress('Dirección no disponible');
@@ -187,113 +109,107 @@ export function GPSTab() {
     } catch (error) {
       console.error('Error al actualizar la dirección:', error);
     }
+    setLoading(false);
   };
 
   const analyzeSurroundings = async (lat: number, lng: number) => {
     setAnalyzing(true);
+    console.log('Mi latitud:', lat, 'Mi longitud:', lng); // <-- Aquí se imprime
     try {
-      // Buscar lugares médicos cercanos con un radio más amplio
-      const medicalResponse = await fetch(
-        `https://us1.locationiq.com/v1/nearby?key=${LOCATIONIQ_API_KEY}&lat=${lat}&lon=${lng}&radius=1000&tag=amenity=hospital,amenity=clinic,amenity=pharmacy,amenity=doctors&format=json`
-      );
-      
-      if (!medicalResponse.ok) {
-        throw new Error('Error al obtener datos de LocationIQ');
-      }
+      const queries = [
+        { q: 'hospital', type: 'hospital' },
+        { q: 'clinic', type: 'clinic' },
+        { q: 'pharmacy', type: 'pharmacy' }
+      ];
+      let allResults: any[] = [];
 
-      const medicalData = await medicalResponse.json();
-      const places: NearbyPlace[] = [];
-
-      // Procesar lugares médicos
-      for (const place of medicalData) {
-        try {
-          const detailsResponse = await fetch(
-            `https://us1.locationiq.com/v1/place_details?key=${LOCATIONIQ_API_KEY}&place_id=${place.place_id}&format=json`
-          );
-          
-          if (!detailsResponse.ok) continue;
-          
-          const details = await detailsResponse.json();
-          const distance = calculateDistance(lat, lng, place.lat, place.lon);
-          const type = place.tags?.amenity === 'hospital' ? 'hospital' :
-                      place.tags?.amenity === 'clinic' ? 'clinic' :
-                      place.tags?.amenity === 'pharmacy' ? 'pharmacy' :
-                      place.tags?.amenity === 'doctors' ? 'medical_center' : 'medical_center';
-
-          const placeInfo: NearbyPlace = {
-            name: place.tags?.name || details.name || 'Lugar sin nombre',
-            distance: `${distance.toFixed(1)} km`,
-            phone: place.tags?.phone || details.phone || 'No disponible',
-            lat: place.lat,
-            lng: place.lon,
-            address: place.tags?.['addr:street'] ? 
-              `${place.tags['addr:street']} ${place.tags['addr:housenumber'] || ''}, ${place.tags['addr:city'] || ''}` : 
-              details.address || 'Dirección no disponible',
-            type: type,
-            description: `${type === 'hospital' ? 'Hospital' : 
-                         type === 'clinic' ? 'Clínica' : 
-                         type === 'pharmacy' ? 'Farmacia' : 
-                         type === 'medical_center' ? 'Centro Médico' : 'Centro Médico'} ${place.tags?.opening_hours ? 
-                         (place.tags.opening_hours.includes('open') ? 'abierto' : 'cerrado') : ''}`,
-            openNow: place.tags?.opening_hours?.includes('open')
-          };
-
-          places.push(placeInfo);
-        } catch (error) {
-          console.error('Error procesando lugar médico:', error);
-          continue;
-        }
-      }
-
-      // Si no hay lugares médicos, buscar puntos de referencia
-      if (places.length === 0) {
-        const landmarksResponse = await fetch(
-          `https://us1.locationiq.com/v1/nearby?key=${LOCATIONIQ_API_KEY}&lat=${lat}&lon=${lng}&radius=500&tag=highway=residential,highway=primary,highway=secondary,amenity=place_of_worship,historic=monument,leisure=park,shop=mall&format=json`
+      for (const { q } of queries) {
+        const response = await fetch(
+          `https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_API_KEY}&q=${q}&lat=${lat}&lon=${lng}&format=json&addressdetails=1&extratags=1&namedetails=1`
         );
-
-        if (landmarksResponse.ok) {
-          const landmarksData = await landmarksResponse.json();
-          
-          for (const landmark of landmarksData) {
-            try {
-              const distance = calculateDistance(lat, lng, landmark.lat, landmark.lon);
-              const type = landmark.tags?.highway ? 'street' : 
-                          landmark.tags?.shop === 'mall' ? 'landmark' : 'landmark';
-              const name = landmark.tags?.name || 
-                          (landmark.tags?.highway ? `${landmark.tags.highway} ${landmark.tags.ref || ''}`.trim() : 'Punto de referencia');
-
-              const landmarkInfo: NearbyPlace = {
-                name: name,
-                distance: `${distance.toFixed(1)} km`,
-                phone: 'No disponible',
-                lat: landmark.lat,
-                lng: landmark.lon,
-                address: landmark.tags?.['addr:street'] ? 
-                  `${landmark.tags['addr:street']} ${landmark.tags['addr:housenumber'] || ''}, ${landmark.tags['addr:city'] || ''}` : 
-                  'Dirección no disponible',
-                type: type,
-                description: type === 'street' ? 
-                  `Calle ${landmark.tags?.highway === 'residential' ? 'residencial' : 
-                           landmark.tags?.highway === 'primary' ? 'principal' : 'secundaria'}` :
-                  landmark.tags?.shop === 'mall' ? 'Centro Comercial' :
-                  landmark.tags?.historic ? 'Monumento histórico' :
-                  landmark.tags?.leisure === 'park' ? 'Parque o plaza' :
-                  landmark.tags?.amenity === 'place_of_worship' ? 'Lugar de culto' : 'Punto de referencia'
-              };
-
-              places.push(landmarkInfo);
-            } catch (error) {
-              console.error('Error procesando punto de referencia:', error);
-              continue;
-            }
-          }
+        if (response.ok) {
+          const data = await response.json();
+          allResults = allResults.concat(data);
         }
       }
 
-      setNearbyPlaces(places.length > 0 ? places : PLACES_EXAMPLE);
-      provideSurroundingsAnalysis(places.length > 0 ? places : PLACES_EXAMPLE);
+      // Elimina duplicados por lat/lon
+      const uniqueResults = allResults.filter(
+        (place, index, self) =>
+          index === self.findIndex((p) => p.lat === place.lat && p.lon === place.lon)
+      );
+
+      const places: NearbyPlace[] = uniqueResults
+        .filter(place =>
+          (place.class === 'amenity' && (
+            place.type === 'hospital' ||
+            place.type === 'clinic' ||
+            place.type === 'pharmacy'
+          ))
+        )
+        .map((place) => {
+          const realName =
+            (place.namedetails && place.namedetails.name) ||
+            place.name ||
+            (place.address && place.address.hospital) ||
+            (place.address && place.address.clinic) ||
+            (place.address && place.address.pharmacy) ||
+            place.display_name?.split(',')[0] ||
+            'Lugar sin nombre';
+
+          let type: NearbyPlace['type'] = 'medical_center';
+          const nameLower = realName.toLowerCase();
+          if (place.type === 'pharmacy' || nameLower.includes('pharmacy') || nameLower.includes('farmacia')) type = 'pharmacy';
+          else if (place.type === 'clinic' || nameLower.includes('clinic') || nameLower.includes('clínica')) type = 'clinic';
+          else if (place.type === 'hospital' || nameLower.includes('hospital')) type = 'hospital';
+
+          const distance = calculateDistance(
+            lat,
+            lng,
+            parseFloat(place.lat),
+            parseFloat(place.lon)
+          );
+
+          return {
+            name: realName,
+            distance: `${distance.toFixed(1)} km`,
+            phone: place.extratags?.phone || 'No disponible',
+            lat: parseFloat(place.lat),
+            lng: parseFloat(place.lon),
+            address: place.display_name,
+            type,
+            description:
+              type === 'hospital'
+                ? 'Hospital'
+                : type === 'clinic'
+                ? 'Clínica'
+                : type === 'pharmacy'
+                ? 'Farmacia'
+                : 'Centro Médico',
+          };
+        });
+
+      setNearbyPlaces(places);
     } catch (error) {
       console.error('Error analizando alrededores:', error);
+      setNearbyPlaces([]);
+    }
+    setAnalyzing(false);
+  };
+
+  const searchNearby = async (lat: number, lon: number) => {
+    setAnalyzing(true);
+    try {
+      const response = await fetch(
+        `https://us1.locationiq.com/v1/search.php?key=${LOCATIONIQ_API_KEY}&q=hospital&lat=${lat}&lon=${lon}&format=json`
+      );
+      if (!response.ok) throw new Error('Error al obtener datos de LocationIQ');
+      const data = await response.json();
+      // Procesa los datos aquí...
+      // ...
+    } catch (error) {
+      console.error('Error analizando alrededores:', error);
+      setNearbyPlaces([]);
     }
     setAnalyzing(false);
   };
@@ -302,150 +218,12 @@ export function GPSTab() {
     const R = 6371; // Radio de la Tierra en km
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
-  };
-
-  const provideSurroundingsAnalysis = (places: NearbyPlace[]) => {
-    if (muted) return;
-
-    if (places.length === 0) {
-      // No mostrar mensaje si no hay lugares cercanos
-      return;
-    }
-
-    const hospital = places.find(p => p.type === 'hospital');
-    const pharmacy = places.find(p => p.type === 'pharmacy');
-    const clinic = places.find(p => p.type === 'clinic');
-    const streets = places.filter(p => p.type === 'street');
-    const landmarks = places.filter(p => p.type === 'landmark');
-
-    let message = 'Análisis de tu ubicación actual:\n\n';
-    
-    if (hospital) {
-      message += `Hay un hospital a ${hospital.distance} de tu ubicación. ${hospital.description}\n\n`;
-    }
-    
-    if (pharmacy) {
-      message += `La farmacia más cercana está a ${pharmacy.distance}. ${pharmacy.description}\n\n`;
-    }
-    
-    if (clinic) {
-      message += `También hay una clínica a ${clinic.distance}. ${clinic.description}\n\n`;
-    }
-
-    if (places.length === 0) {
-      message += 'No se encontraron lugares cercanos en un radio de 2 kilómetros.';
-    } else if (!hospital && !pharmacy && !clinic) {
-      message += 'Puntos de referencia cercanos:\n\n';
-      
-      if (streets.length > 0) {
-        message += 'Calles cercanas:\n';
-        streets.slice(0, 3).forEach(street => {
-          message += `- ${street.name} (a ${street.distance})\n`;
-        });
-        message += '\n';
-      }
-
-      if (landmarks.length > 0) {
-        message += 'Puntos de referencia:\n';
-        landmarks.slice(0, 3).forEach(landmark => {
-          message += `- ${landmark.name} (${landmark.description}, a ${landmark.distance})\n`;
-        });
-      }
-    }
-
-    message += '\n¿Necesitas más información sobre algún lugar cercano?';
-
-    Alert.alert('Análisis de Alrededores', message);
-  };
-
-  useFocusEffect(
-    React.useCallback(() => {
-      if (!muted && address) {
-        speakAssistant(address);
-      }
-      return () => {
-        Speech.stop();
-      };
-    }, [muted, address])
-  );
-
-  useFocusEffect(
-    React.useCallback(() => {
-      (async () => {
-        try {
-          const userDataStr = await AsyncStorage.getItem('userData');
-          if (userDataStr) {
-            const userData = JSON.parse(userDataStr);
-            setUserName(userData.name || 'Usuario');
-          }
-        } catch (e) {
-          setUserName('Usuario');
-        }
-      })();
-      return () => {};
-    }, [])
-  );
-
-  const placesToShow = nearbyPlaces.length > 0 ? nearbyPlaces : PLACES_EXAMPLE;
-
-  const speakAssistant = (direccion: string) => {
-    if (muted) return;
-    const horaActual = new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
-    let message = `Hola, ${userName}. La hora actual es ${horaActual}. `;
-    if (direccion) {
-      message += `Te encuentras en: ${direccion}. `;
-      const hospital = placesToShow.find(p => p.type === 'hospital');
-      const pharmacy = placesToShow.find(p => p.type === 'pharmacy');
-      const clinic = placesToShow.find(p => p.type === 'clinic');
-      const streets = placesToShow.filter(p => p.type === 'street');
-      const landmarks = placesToShow.filter(p => p.type === 'landmark');
-      if (hospital) {
-        message += `Hay un hospital llamado ${hospital.name} a ${hospital.distance}. `;
-      }
-      if (pharmacy) {
-        message += `La farmacia más cercana es ${pharmacy.name} a ${pharmacy.distance}. `;
-      }
-      if (clinic) {
-        message += `También hay una clínica llamada ${clinic.name} a ${clinic.distance}. `;
-      }
-      if (placesToShow.length === 0) {
-        message += 'No se encontraron lugares cercanos.';
-      } else if (!hospital && !pharmacy && !clinic) {
-        if (streets.length > 0) {
-          message += `Estás cerca de ${streets[0].name}. `;
-        }
-        if (landmarks.length > 0) {
-          message += `Hay un ${landmarks[0].description.toLowerCase()} llamado ${landmarks[0].name} a ${landmarks[0].distance}. `;
-        }
-      }
-      // Solo agregar la frase si hay lugares reales
-      if (nearbyPlaces.length > 0) {
-        message += '¿Necesitas más información sobre los lugares cercanos?';
-      }
-    } else {
-      message += 'No se pudo obtener tu dirección.';
-    }
-    Speech.speak(message, { rate: 0.95, pitch: 1.1, volume: 1.0, language: 'es' });
-  };
-
-  const getStaticMapUrl = () => {
-    if (!location) return '';
-    const { latitude, longitude } = location.coords;
-    return `https://maps.locationiq.com/v3/staticmap?key=${LOCATIONIQ_API_KEY}&center=${latitude},${longitude}&zoom=15&size=600x300&markers=icon:small-red|${latitude},${longitude}`;
-  };
-
-  const handleMute = () => {
-    setMuted(!muted);
-    Speech.stop();
-    if (!muted && address) {
-      setTimeout(() => speakAssistant(address), 500);
-    }
   };
 
   const handleCall = (phone: string) => {
@@ -469,10 +247,7 @@ export function GPSTab() {
     let infoMessage = `${place.description}\n\n`;
     infoMessage += `Distancia: ${place.distance}\n`;
     infoMessage += `Dirección: ${place.address}\n`;
-    if (place.rating) {
-      infoMessage += `Calificación: ${place.rating}/5\n`;
-    }
-    infoMessage += `Estado: ${place.openNow ? 'Abierto' : 'Cerrado'}\n\n`;
+    infoMessage += `Teléfono: ${place.phone}\n\n`;
     infoMessage += '¿Qué deseas hacer?';
 
     Alert.alert(
@@ -497,38 +272,31 @@ export function GPSTab() {
 
   return (
     <ThemedView style={{ flex: 1, paddingTop: 0, marginTop: 0 }}>
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={true}
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.headerRow}>
           <ThemedText style={styles.assistantText}>Asistente ubicación</ThemedText>
-          <TouchableOpacity onPress={handleMute} style={styles.muteButton}>
-            <Ionicons name={muted ? 'volume-mute' : 'volume-high'} size={28} color={muted ? 'gray' : '#007AFF'} />
-          </TouchableOpacity>
         </View>
 
-        {!LOCATIONIQ_API_KEY || LOCATIONIQ_API_KEY === 'TU_API_KEY_AQUI' ? (
-          <View style={styles.apiWarningContainer}>
-            <Ionicons name="warning" size={24} color="#FFA500" />
-            <ThemedText style={styles.apiWarningText}>
-              Para obtener información real de lugares cercanos, necesitas una API key de LocationIQ.
-              Actualmente se muestran datos de ejemplo.
-            </ThemedText>
-          </View>
-        ) : null}
-
-        <View style={styles.mapContainer}>
+        <View style={[styles.mapContainer, { height: Dimensions.get('window').height * 0.7 }]}>
           {loading ? (
             <ActivityIndicator size="large" color="#007AFF" />
           ) : errorMsg ? (
             <ThemedText style={styles.errorText}>{errorMsg}</ThemedText>
           ) : location ? (
-            <Image
-              source={{ uri: getStaticMapUrl() }}
+            <MapView
+              ref={mapRef}
               style={styles.map}
-              resizeMode="cover"
+              region={{
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              }}
+              showsUserLocation
             />
           ) : (
             <ThemedText>Cargando ubicación...</ThemedText>
@@ -543,46 +311,7 @@ export function GPSTab() {
           </View>
         )}
 
-        <View style={styles.placesContainer}>
-          <ThemedText style={styles.placesTitle}>Lugares cercanos:</ThemedText>
-          {analyzing ? (
-            <ActivityIndicator size="small" color="#007AFF" style={styles.analyzingIndicator} />
-          ) : (
-            placesToShow.map((place, index) => (
-              <TouchableOpacity 
-                key={index} 
-                style={styles.placeItem}
-                onPress={() => handlePlaceInfo(place)}
-              >
-                <View style={styles.placeHeader}>
-                  <ThemedText style={styles.placeName}>{place.name}</ThemedText>
-                  <ThemedText style={styles.placeDistance}>{place.distance}</ThemedText>
-                </View>
-                <ThemedText style={styles.placeDescription}>{place.description}</ThemedText>
-                {place.rating && (
-                  <View style={styles.ratingContainer}>
-                    <Ionicons name="star" size={16} color="#FFD700" />
-                    <ThemedText style={styles.ratingText}>{place.rating}/5</ThemedText>
-                  </View>
-                )}
-                <View style={styles.optionsRow}>
-                  <TouchableOpacity style={styles.optionButton} onPress={() => handleCall(place.phone)}>
-                    <Ionicons name="call" size={22} color="#007AFF" />
-                    <ThemedText style={styles.optionText}>Llamar</ThemedText>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.optionButton} onPress={() => handleRoute(place.lat, place.lng)}>
-                    <Ionicons name="navigate" size={22} color="#007AFF" />
-                    <ThemedText style={styles.optionText}>Ruta</ThemedText>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.optionButton} onPress={handleShare}>
-                    <Ionicons name="share-social" size={22} color="#007AFF" />
-                    <ThemedText style={styles.optionText}>Compartir</ThemedText>
-                  </TouchableOpacity>
-                </View>
-              </TouchableOpacity>
-            ))
-          )}
-        </View>
+        {/* Elimina el bloque de tarjetas de lugares cercanos */}
       </ScrollView>
     </ThemedView>
   );
@@ -616,7 +345,7 @@ const styles = StyleSheet.create({
   },
   mapContainer: {
     width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height * 0.4,
+    height: Dimensions.get('window').height * 0.7, // Más grande
     marginBottom: 10,
   },
   map: {

@@ -25,32 +25,20 @@
   }
   return self;
 }
-- (void) prepare
-{
-    if(_didMoveToWindow) return;
-    _didMoveToWindow = true;
-    if(_fillColor) {
-      _circle.fillColor = _fillColor;
-    }
-    if(_strokeColor) {
-      _circle.strokeColor = _strokeColor;
-    }
-    if(_strokeWidth) {
-      _circle.strokeWidth = _strokeWidth;
-    }
-    if (_zIndex) {
-        _circle.zIndex = _zIndex;
-    }
-}
-- (void) didMoveToSuperview
-{
-    [super didMoveToSuperview];
-    [self prepare];
-}
 
 - (void)didMoveToWindow {
   [super didMoveToWindow];
-    [self prepare];
+  if(_didMoveToWindow) return;
+  _didMoveToWindow = true;
+  if(_fillColor) {
+    _circle.fillColor = _fillColor;
+  }
+  if(_strokeColor) {
+    _circle.strokeColor = _strokeColor;
+  }
+  if(_strokeWidth) {
+    _circle.strokeWidth = _strokeWidth;
+  }
 }
 
 - (void)setRadius:(double)radius

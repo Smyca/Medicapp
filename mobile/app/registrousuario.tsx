@@ -46,9 +46,18 @@ export default function RegistroUsuario() {
     }
   };
 
+  const validateEmail = (email: string) => {
+    // Expresión regular simple para validar email
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
   const handleSubmit = async () => {
     if (!form.usuario || !form.fechaNacimiento || !form.email || !form.password) {
       Alert.alert("Error", "Completa todos los campos");
+      return;
+    }
+    if (!validateEmail(form.email)) {
+      Alert.alert("Error", "El correo electrónico no es válido");
       return;
     }
 
