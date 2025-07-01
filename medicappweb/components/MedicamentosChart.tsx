@@ -5,17 +5,19 @@ import { Chart, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from "
 
 Chart.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
-type Usuario = { medicamentoImportante: string };
+type Medicamento = { nombre: string };
 
-function getMedicamentoStats(datos: Usuario[]) {
+function getMedicamentoStats(datos: Medicamento[]) {
   const stats: Record<string, number> = {};
   datos.forEach((d) => {
-    stats[d.medicamentoImportante] = (stats[d.medicamentoImportante] || 0) + 1;
+    if (d.nombre) {
+      stats[d.nombre] = (stats[d.nombre] || 0) + 1;
+    }
   });
   return stats;
 }
 
-export default function MedicamentosChart({ datos }: { datos: Usuario[] }) {
+export default function MedicamentosChart({ datos }: { datos: Medicamento[] }) {
   const stats = getMedicamentoStats(datos);
   const labels = Object.keys(stats);
   const values = Object.values(stats);

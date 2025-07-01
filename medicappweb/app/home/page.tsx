@@ -1,16 +1,28 @@
 "use client";
 
-import { AppSidebar } from "@/components/app-sidebar"
-import { Separator } from "@/components/ui/separator"
+import { useEffect, useState } from "react";
+import { AppSidebar } from "@/components/app-sidebar";
+import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { datosUsuarios } from "@/data/usuarios"
-import MedicamentosChart from "@/components/MedicamentosChart"
+} from "@/components/ui/sidebar";
+import MedicamentosChart from "@/components/MedicamentosChart";
 
 export default function Page() {
+  const [medicamentos, setMedicamentos] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch("http://54.81.211.180:8080/medicamentos")
+      .then((res) => res.json())
+      .then((data) => setMedicamentos(data))
+      .catch((err) => {
+        console.error("Error al obtener medicamentos:", err);
+        setMedicamentos([]);
+      });
+  }, []);
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -30,7 +42,7 @@ export default function Page() {
               Bienvenido a MedicappAdmin!
             </h1>
             <div className="w-full max-w-2xl bg-card p-4 rounded-lg shadow-lg">
-              <MedicamentosChart datos={datosUsuarios} />
+              <MedicamentosChart datos={medicamentos} />
               <p className="mt-4 text-center text-white font-semibold text-lg">
                 Medicamentos más usados
               </p>
@@ -39,5 +51,5 @@ export default function Page() {
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }
