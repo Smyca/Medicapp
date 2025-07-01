@@ -1,4 +1,8 @@
 "use client";
+<<<<<<< HEAD
+=======
+
+>>>>>>> 63ef9e3a199cba129ab49f2344bbb95491c6e563
 import React, { useState, useEffect } from "react";
 import { AppSidebar } from "@/components/app-sidebar2";
 import { Separator } from "@/components/ui/separator";
@@ -155,6 +159,7 @@ const datosIniciales = [
 export default function DatosPage() {
   const [filtroNombre, setFiltroNombre] = useState("");
   const [filtroCorreo, setFiltroCorreo] = useState("");
+<<<<<<< HEAD
   const [filtroTipoSangre, setFiltroTipoSangre] = useState("");
   const [datos, setDatos] = useState<any[]>([]);
 
@@ -295,31 +300,42 @@ export default function DatosPage() {
         creacion: fechaAleatoria(),
       },
     ]);
+=======
+  const [datos, setDatos] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch("http://54.81.211.180:8080/usuarios")
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("API usuarios:", data); // <-- Agrega esto temporalmente
+        setDatos(data);
+      })
+      .catch((err) => {
+        console.error("Error al obtener usuarios:", err);
+        setDatos([]);
+      });
+>>>>>>> 63ef9e3a199cba129ab49f2344bbb95491c6e563
   }, []);
 
   const [seleccionados, setSeleccionados] = useState<string[]>([]);
+  const [showMailModal, setShowMailModal] = useState(false);
+  const [mailEdit, setMailEdit] = useState(false);
+  const [mailMessage, setMailMessage] = useState("Hola, este es un mensaje para los usuarios seleccionados.");
   const todosSeleccionados =
     datosFiltrados().length > 0 &&
-    datosFiltrados().every((d) => seleccionados.includes(d.correo));
-
-  const [showMailModal, setShowMailModal] = useState(false);
-  const [mailMessage, setMailMessage] = useState(
-    "Hola, este es un mensaje para el usuario."
-  );
-  const [mailEdit, setMailEdit] = useState(false);
+    datosFiltrados().every((d) => seleccionados.includes(d.correoElectronico));
 
   function datosFiltrados() {
     return datos.filter(
       (dato) =>
-        dato.nombre.toLowerCase().includes(filtroNombre.toLowerCase()) &&
-        (dato.correo?.toLowerCase().includes(filtroCorreo.toLowerCase()) ?? true) &&
-        dato.tipoSangre.toLowerCase().includes(filtroTipoSangre.toLowerCase())
+        dato.nombre?.toLowerCase().includes(filtroNombre.toLowerCase()) &&
+        (dato.correoElectronico?.toLowerCase().includes(filtroCorreo.toLowerCase()) ?? true)
     );
   }
 
   const handleDelete = (correo: string) => {
     if (window.confirm("¿Estás seguro de que deseas borrar esta cuenta?")) {
-      setDatos(datos.filter((dato) => dato.correo !== correo));
+      setDatos(datos.filter((dato) => dato.correoElectronico !== correo));
       setSeleccionados(seleccionados.filter((c) => c !== correo));
     }
   };
@@ -336,14 +352,14 @@ export default function DatosPage() {
     if (todosSeleccionados) {
       setSeleccionados(
         seleccionados.filter((correo) =>
-          !datosFiltrados().some((d) => d.correo === correo)
+          !datosFiltrados().some((d) => d.correoElectronico === correo)
         )
       );
     } else {
       setSeleccionados([
         ...seleccionados,
         ...datosFiltrados()
-          .map((d) => d.correo)
+          .map((d) => d.correoElectronico)
           .filter((correo) => !seleccionados.includes(correo)),
       ]);
     }
@@ -396,13 +412,6 @@ export default function DatosPage() {
               onChange={(e) => setFiltroCorreo(e.target.value)}
               className="px-2 py-1 rounded border bg-background text-foreground"
             />
-            <input
-              type="text"
-              placeholder="Filtrar por tipo de sangre"
-              value={filtroTipoSangre}
-              onChange={(e) => setFiltroTipoSangre(e.target.value)}
-              className="px-2 py-1 rounded border bg-background text-foreground"
-            />
           </div>
           <div className="flex w-full max-w-6xl justify-end mb-2">
             <Button onClick={handleSendMail} disabled={seleccionados.length === 0}>
@@ -421,8 +430,10 @@ export default function DatosPage() {
                       aria-label="Seleccionar todos"
                     />
                   </th>
+                  <th className="px-2 py-1 border">ID</th>
                   <th className="px-2 py-1 border">Nombre</th>
                   <th className="px-2 py-1 border">Correo</th>
+<<<<<<< HEAD
                   <th className="px-2 py-1 border">Correo electrónico</th> {}
                   <th className="px-2 py-1 border">Edad</th>
                   <th className="px-2 py-1 border">Tipo de Sangre</th>
@@ -432,13 +443,21 @@ export default function DatosPage() {
                   <th className="px-2 py-1 border">Contacto 1</th>
                   <th className="px-2 py-1 border">Contacto 2</th>
                   <th className="px-2 py-1 border">Dirección</th>
+=======
+                  <th className="px-2 py-1 border">Fecha de nacimiento</th>
+                  <th className="px-2 py-1 border">Creado en</th>
+>>>>>>> 63ef9e3a199cba129ab49f2344bbb95491c6e563
                   <th className="px-2 py-1 border">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {datosFiltrados().length === 0 ? (
                   <tr>
+<<<<<<< HEAD
                     <td colSpan={13} className="text-center py-4 text-muted-foreground">
+=======
+                    <td colSpan={7} className="text-center py-4 text-muted-foreground">
+>>>>>>> 63ef9e3a199cba129ab49f2344bbb95491c6e563
                       No se encontraron resultados.
                     </td>
                   </tr>
@@ -448,12 +467,14 @@ export default function DatosPage() {
                       <td className="px-2 py-1 border text-center">
                         <input
                           type="checkbox"
-                          checked={seleccionados.includes(dato.correo)}
-                          onChange={() => handleSelect(dato.correo)}
+                          checked={seleccionados.includes(dato.correoElectronico)}
+                          onChange={() => handleSelect(dato.correoElectronico)}
                           aria-label={`Seleccionar ${dato.nombre}`}
                         />
                       </td>
+                      <td className="px-2 py-1 border">{dato.id}</td>
                       <td className="px-2 py-1 border">{dato.nombre}</td>
+<<<<<<< HEAD
                       <td className="px-2 py-1 border">{dato.correo}</td>
                       <td className="px-2 py-1 border">{dato.correo}</td>
                       <td className="px-2 py-1 border">{dato.edad}</td>
@@ -464,11 +485,28 @@ export default function DatosPage() {
                       <td className="px-2 py-1 border">{dato.contacto1}</td>
                       <td className="px-2 py-1 border">{dato.contacto2}</td>
                       <td className="px-2 py-1 border">{dato.direccion}</td>
+=======
+                      <td className="px-2 py-1 border">{dato.correoElectronico}</td>
+                      <td className="px-2 py-1 border">
+                        {dato.fechaNacimiento
+                          ? (() => {
+                              const d = new Date(dato.fechaNacimiento);
+                              const day = String(d.getDate()).padStart(2, "0");
+                              const month = String(d.getMonth() + 1).padStart(2, "0");
+                              const year = d.getFullYear();
+                              return `${day}-${month}-${year}`;
+                            })()
+                          : ""}
+                      </td>
+                      <td className="px-2 py-1 border">
+                        {dato.creadoEn ? new Date(dato.creadoEn).toLocaleString("es-CL", { dateStyle: "medium", timeStyle: "short" }) : ""}
+                      </td>
+>>>>>>> 63ef9e3a199cba129ab49f2344bbb95491c6e563
                       <td className="px-2 py-1 border">
                         <Button
                           variant="destructive"
                           size="sm"
-                          onClick={() => handleDelete(dato.correo)}
+                          onClick={() => handleDelete(dato.correoElectronico)}
                         >
                           X
                         </Button>
