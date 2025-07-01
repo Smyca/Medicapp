@@ -127,21 +127,18 @@ export default function EditMedicationScreen() {
         let firstNotification = new Date(now);
         firstNotification.setHours(startHour, startMinute, 0, 0);
         if (firstNotification <= now) {
-          // Si la hora ya pasó hoy, programa para mañana
           firstNotification.setDate(firstNotification.getDate() + 1);
         }
 
-        // Programar la primera notificación exacta
         await Notifications.scheduleNotificationAsync({
           content: {
             title: 'Recordatorio de medicamento',
             body: `Es hora de tomar: ${medication.name}`,
             sound: 'default',
           },
-          trigger: firstNotification, // tipo date
+          trigger: firstNotification, 
         });
 
-        // Programar notificaciones para cada X horas desde la hora elegida
         for (let i = 0; i < 24; i += intervalHours) {
           const hour = (startHour + i) % 24;
           await Notifications.scheduleNotificationAsync({
@@ -322,7 +319,6 @@ export default function EditMedicationScreen() {
                       const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
                       setMedication({ ...medication, time: `${hours}:${minutes}` });
                     }
-                    // No cerrar aquí, el usuario debe cerrar el modal manualmente
                   }
                 }}
                 style={{ backgroundColor: '#181A20' }}

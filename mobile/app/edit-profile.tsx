@@ -24,6 +24,7 @@ export default function EditProfileScreen() {
     { name: '', phone: '', relation: '' }
   ]);
   const [age, setAge] = useState(''); // Nuevo estado para la edad
+  const [name, setName] = useState(''); // Nuevo estado para el nombre
 
   useEffect(() => {
     loadUserData();

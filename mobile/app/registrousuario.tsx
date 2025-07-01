@@ -13,6 +13,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { API_URL } from "@env";
+import { Ionicons } from "@expo/vector-icons"; // Agrega este import si no lo tienes
 
 export default function RegistroUsuario() {
   const [form, setForm] = useState({
@@ -22,6 +23,7 @@ export default function RegistroUsuario() {
     password: "",
   });
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const handleChange = (name: string, value: string) => {
@@ -237,23 +239,41 @@ export default function RegistroUsuario() {
           <Text style={{ color: "#fff", fontWeight: "bold", marginBottom: 4 }}>
             Contraseña
           </Text>
-          <TextInput
+          <View
             style={{
+              flexDirection: "row",
+              alignItems: "center",
               backgroundColor: "#181A20",
               borderColor: "#333",
               borderWidth: 1,
               borderRadius: 8,
-              color: "#fff",
               marginBottom: 18,
-              paddingHorizontal: 10,
-              paddingVertical: 8,
             }}
-            placeholder="Contraseña"
-            placeholderTextColor="#888"
-            secureTextEntry
-            value={form.password}
-            onChangeText={(text) => handleChange("password", text)}
-          />
+          >
+            <TextInput
+              style={{
+                flex: 1,
+                color: "#fff",
+                paddingHorizontal: 10,
+                paddingVertical: 8,
+              }}
+              placeholder="Contraseña"
+              placeholderTextColor="#888"
+              secureTextEntry={!showPassword}
+              value={form.password}
+              onChangeText={(text) => handleChange("password", text)}
+            />
+            <TouchableOpacity
+              onPress={() => setShowPassword((v) => !v)}
+              style={{ padding: 10 }}
+            >
+              <Ionicons
+                name={showPassword ? "eye-off" : "eye"}
+                size={22}
+                color="#888"
+              />
+            </TouchableOpacity>
+          </View>
 
           <TouchableOpacity
             style={{
