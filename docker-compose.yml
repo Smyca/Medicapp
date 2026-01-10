@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  api:
+    build: ./API
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - AUTH_SERVICE_URL=http://auth-service:3001
+    env_file:
+      - ./API/src/.env
+    volumes:
+      - ./API:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - medicapp-network
+
+  auth-service:
+    build: ./backend/service_auth
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+    env_file:
+      - ./backend/service_auth/.env
+    volumes:
+      - ./backend/service_auth:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - medicapp-network
+
+networks:
+  medicapp-network:
